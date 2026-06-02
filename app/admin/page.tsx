@@ -38,12 +38,22 @@ const Page = () => {
     
         // 1. ambil SOP id
         const sopResponses = await Promise.all(
-          SOPToken.map((nama_sop) => getListSopByName(nama_sop))
+            SOPToken.map((nama_sop) => getListSopByName(nama_sop))
         );
-    
+        console.error("SOPToken =", SOPToken);
+        console.error("sopResponses =", sopResponses);
+        
+        sopResponses.forEach((res, index) => {
+            console.error(`SOP Response ${index}:`, res.data);
+        });
+        
         const sopIds = sopResponses
-          .filter((res) => res?.status === 200)
-          .map((res: any) => res.data.id);
+        .filter((res) => res?.status === 200)
+        .flatMap((res: any) =>
+            res.data.map((soal: any) => soal.id)
+        );
+        
+        console.error("sopIds =", sopIds);
     
         // 2. ambil test id berdasarkan sesi
         const testRes = await getTestById(Number(sesiToken));
@@ -55,19 +65,23 @@ const Page = () => {
     
         // 3. generate detail test
         const requests = testIds.flatMap((testId: number) =>
-          sopIds.map((sopId: number) =>
-            createDetailTest({
-              test: testId,
-              soal_sop: sopId,
-              nilai: 0,
+            sopIds.map((sopId: number) => {
+                // console.error("testId =", testId);
+                // console.error("sopId =", sopId);
+              const payload = {
+                test: testId,
+                soal_sop: sopId,
+                nilai: 0,
+              };
+            //   console.error("Payload yang dikirim:", payload);
+              return createDetailTest(payload);
             })
-          )
-        );
+          );
     
         // 4. execute semua
         await Promise.all(requests);
     
-        console.log("Detail SOP created successfully");
+        console.error("Detail SOP created successfully");
     
       } catch (error) {
         console.error("Error create detail SOP:", error);

@@ -4,6 +4,7 @@ import { registerType } from "@/type/registerType";
 import { loginType } from "@/type/loginType";
 import { uploadTestType } from "@/type/uploadTestType";
 import { createTestType } from "@/type/detailTestType";
+import { UpdateDetailTestType } from "@/type/updateDetailTestType";
 
 export const BASEURL = process.env.NEXT_PUBLIC_API_URL + "/";
 
@@ -47,7 +48,9 @@ export const getListSopByName = (data: string) => api.get(`api/soal-sop/list/${d
 
 // TEST
 export const uploadTest = (data: uploadTestType) => api.post("api/test/create/", data);
-export const getTestById = (data: number) => api.post(`api/test/list/${data}/`);
+export const getTestById = (data: number) => api.get(`api/test/list/${data}/`);
 
 // DETAIL TEST
 export const createDetailTest = (data: createTestType) => api.post("api/detail-test/create/", data);   
+export const getDetailTestById = (data: number) => api.get(`api/detail-test/list/${data}/`);
+export const updateDetailTest = (data: UpdateDetailTestType) => api.patch(`api/detail-test/update/`, data);
