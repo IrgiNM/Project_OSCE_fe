@@ -5,6 +5,7 @@ import { loginType } from "@/type/loginType";
 import { uploadTestType } from "@/type/uploadTestType";
 import { createTestType } from "@/type/detailTestType";
 import { UpdateDetailTestType } from "@/type/updateDetailTestType";
+import { updateTestType } from "@/type/testType";
 
 export const BASEURL = process.env.NEXT_PUBLIC_API_URL + "/";
 
@@ -37,10 +38,14 @@ export const login = (data: loginType) =>
 export const register = (data: registerType) => api.post("api/user/create/", data);
 export const getAllUserSiswa = () => api.get("api/user/list/mahasiswa/");
 export const getAllUserDosen = () => api.get("api/user/list/dosen/");
+export const getUserMe = () => api.get("api/user/me/");
 
 // SESI
 export const createSesiUjian = () => api.post("api/sesi/create/");
 export const getAllSesiUjian = () => api.get("api/sesi/list/");
+
+// SOP
+export const getAllJenisSop = () => api.get("api/jenis-sop/list/");
 
 // SOP
 export const getAllSop = () => api.get("api/soal-sop/list/");
@@ -49,6 +54,9 @@ export const getListSopByName = (data: string) => api.get(`api/soal-sop/list/${d
 // TEST
 export const uploadTest = (data: uploadTestType) => api.post("api/test/create/", data);
 export const getTestById = (data: number) => api.get(`api/test/list/${data}/`);
+export const getTestByUser = (id: number) => api.get(`api/test/list/user/${id}/`);
+export const getTestLast = () => api.get(`api/test/list/last/`);
+export const updateTest = (id: number, data: updateTestType) => api.patch(`api/test/update/${id}/`, data);
 
 // DETAIL TEST
 export const createDetailTest = (data: createTestType) => api.post("api/detail-test/create/", data);   

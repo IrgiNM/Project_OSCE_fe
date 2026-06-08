@@ -1,9 +1,11 @@
 "use client";
+import Navbar from '@/components/navbar';
 import dataDosen from '@/lib/data/dataDosen';
 import dataSiswa from '@/lib/data/dataSiswa';
 import dataSOP from '@/lib/data/dataSOP';
 import { createDetailTest, createSesiUjian, getListSopByName, getTestById, uploadTest } from '@/lib/function/api';
-import { getToken, setDosenPilihan, setMahasiswaPilihan, setSesiPilihan, setSOPPilihan } from '@/lib/function/token';
+import { getToken, logoutUser, setDosenPilihan, setMahasiswaPilihan, setSesiPilihan, setSOPPilihan } from '@/lib/function/token';
+import Image from 'next/image';
 import { useRouter } from 'next/navigation';
 import React, { useEffect, useState } from 'react'
 
@@ -19,7 +21,27 @@ const Page = () => {
     const [isDosenDipilihDetail, setIsDosenDipilihDetail] = useState(false)
     const [isSOPDipilihDetail, setIsSOPDipilihDetail] = useState(false)
     const [isMulai, setIsMulai] = useState(false)
+    const [isLoading, setIsLoading] = useState(false)
     const [isPilih, setIsPilih] = useState('mahasiswa')
+
+    const [searchMahasiswa, setSearchMahasiswa] = useState("");
+    const [searchDosen, setSearchDosen] = useState("");
+    const [searchSOP, setSearchSOP] = useState("");
+
+    const filteredSiswaList = siswaList.filter((item) =>
+      item.nama_lengkap?.toLowerCase().includes(searchMahasiswa.toLowerCase()) ||
+      item.nim?.toLowerCase().includes(searchMahasiswa.toLowerCase()) ||
+      item.kelas?.toLowerCase().includes(searchMahasiswa.toLowerCase())
+    );
+    
+    const filteredDosenList = dosenList.filter((item) =>
+      item.nama_lengkap?.toLowerCase().includes(searchDosen.toLowerCase()) ||
+      item.email?.toLowerCase().includes(searchDosen.toLowerCase())
+    );
+    
+    const filteredSOPList = soalSOPJenisList.filter((item) =>
+      item.toLowerCase().includes(searchSOP.toLowerCase())
+    );
 
     useEffect(()=>{
       const token = getToken()
@@ -63,23 +85,20 @@ const Page = () => {
             ? testRes.data.map((t: any) => t.id)
             : [];
     
-        // 3. generate detail test
-        const requests = testIds.flatMap((testId: number) =>
-            sopIds.map((sopId: number) => {
-                // console.error("testId =", testId);
-                // console.error("sopId =", sopId);
-              const payload = {
-                test: testId,
-                soal_sop: sopId,
-                nilai: 0,
-              };
-            //   console.error("Payload yang dikirim:", payload);
-              return createDetailTest(payload);
-            })
-          );
-    
-        // 4. execute semua
-        await Promise.all(requests);
+        // 3. create detail test secara berurutan
+        for (const testId of testIds) {
+          for (const sopId of sopIds) {
+            const payload = {
+              test: testId,
+              soal_sop: sopId,
+              nilai: 0,
+            };
+
+            console.log("Payload dikirim:", payload);
+
+            await createDetailTest(payload);
+          }
+        }
     
         console.error("Detail SOP created successfully");
     
@@ -89,6 +108,7 @@ const Page = () => {
     };
 
     const handleSubmit = async () => {
+      setIsLoading(true)
       try {
         // 1. create sesi
         const res = await createSesiUjian();
@@ -137,287 +157,665 @@ const Page = () => {
         router.push("/admin/testPage");
       } catch (error) {
         console.error("Error uploading test:", error);
+      }finally{
+        setIsLoading(false)
       }
     };
 
+    const selectedSiswa = siswaList.filter((item) =>
+        siswaDipilih.includes(item.id)
+      );
+      
+      const selectedDosen = dosenList.filter((item) =>
+        dosenDipilih.includes(item.id)
+      );
+      
+      const selectedSOP = soalSOPJenisList.filter((item) =>
+        SOPDipilih.includes(item)
+      );
+      
+      const tabMenus = [
+        {
+          key: "mahasiswa",
+          label: "Mahasiswa",
+          total: siswaDipilih.length,
+        },
+        // {
+        //   key: "dosen",
+        //   label: "Dosen",
+        //   total: dosenDipilih.length,
+        // },
+        {
+          key: "sop",
+          label: "SOP",
+          total: SOPDipilih.length,
+        },
+      ];
 
-  return (
-    <div className="w-full h-screen flex flex-col justify-center items-center bg-gray-100">
-        <p className='text-[25px] font-bold mb-0'>Create Session Test</p>
-        <p className='mb-5 mt-0'>silahkan pilih mahasiswa yang mau ditest</p>
 
-        <div className='w-[90%] bg-white rounded-lg flex flex-row justify-between items-center gap-1 p-3 shadow-lg overflow-auto scrollbar-hidden border-1 border-gray-500 mb-2'>
-            <button onClick={()=>{setIsPilih('mahasiswa')}} className={`${isPilih === 'mahasiswa'?'bg-black':'bg-gray-500'} flex-1 p-3 bottom-2 rounded-md text-white font-bold`}>Mahasiswa</button>
-            <button onClick={()=>{setIsPilih('dosen')}} className={`${isPilih === 'dosen'?'bg-black':'bg-gray-500'} flex-1 p-3 bottom-2 rounded-md text-white font-bold`}>Dosen</button>
-            <button onClick={()=>{setIsPilih('sop')}} className={`${isPilih === 'sop'?'bg-black':'bg-gray-500'} flex-1 p-3 bottom-2 rounded-md text-white font-bold`}>SOP</button>
-        </div>
+    return (
+        <div className="min-h-screen w-full bg-gradient-to-br from-emerald-50 via-cyan-50 to-blue-100 px-4 py-6">
 
-        {isPilih === 'mahasiswa' && (
-            <>
-                <div className="w-[90%] bg-white rounded-lg flex flex-row justify-between items-center gap-1 p-3 shadow-lg overflow-auto scrollbar-hidden border-1 border-gray-500 mb-2">
-                    <p>Total Mahasiswa dipilih</p>
-                    <div className='flex flex-row gap-2 items-center'>
-                        <p>{siswaDipilih.length}</p>
-                        <button onClick={()=>{setIsSiswaDipilihDetail(true)}} className='bg-black px-3 p-2 rounded-md text-white'>lihat</button>
-                    </div>
+          {/* NAVBAR */}
+          <Navbar></Navbar>
+
+          <div className="mx-auto flex w-full max-w-6xl flex-col gap-5">
+      
+            {/* HEADER */}
+            <div className="overflow-hidden mt-[60px] rounded-xl bg-gradient-to-r from-emerald-600 via-teal-600 to-cyan-600 shadow-xl">
+              <div className="flex flex-col gap-4 p-6 text-white md:flex-row md:items-center md:justify-between">
+                <div>
+                  <div className="mb-2 inline-flex items-center gap-2 rounded-lg bg-white/20 px-3 py-2 backdrop-blur">
+                    <Image src="/doctor.png" alt="Logo" width={12} height={12} />
+                    <span>OSCE Nursing Session</span>
+                  </div>
+                  <h1 className="text-xl font-extrabold tracking-tight">
+                    Buat Sesi Ujian Keperawatan
+                  </h1>
+                  <p className="max-w-2xl  text-emerald-50">
+                    Pilih mahasiswa, dosen penguji, dan SOP tindakan keperawatan untuk memulai sesi OSCE.
+                  </p>
                 </div>
+      
+                <div className="rounded-lg bg-white/15 p-4 border-[.5px] border-white text-center backdrop-blur">
+                  <p className=" text-emerald-50">Total Pilihan</p>
+                  <p className="text-3xl font-black">
+                    {siswaDipilih.length + dosenDipilih.length + SOPDipilih.length}
+                  </p>
+                </div>
+              </div>
+            </div>
+      
+            {/* SUMMARY CARDS
+            <div className="flex flex-row gap-4 md:grid-cols-3">
+              <div className="rounded-xl flex-1 border border-emerald-100 bg-white p-5 shadow-md">
+                <div className="flex items-center justify-between">
+                  <div>
+                    <p className=" font-medium text-gray-500">Mahasiswa</p>
+                    <p className="text-3xl font-black text-emerald-700">
+                      {siswaDipilih.length}
+                    </p>
+                  </div>
+                  <div className="flex h-12 w-12 items-center justify-center rounded-xl border-[.5px] border-emerald-500 bg-emerald-100 text-2xl">
+                    <Image src="/user-active.png" alt="Logo" width={15} height={15} />
+                  </div>
+                </div>
+              </div>
+      
+              {/* <div className="rounded-xl border border-cyan-100 bg-white p-5 shadow-md">
+                <div className="flex items-center justify-between">
+                  <div>
+                    <p className=" font-medium text-gray-500">Dosen Penguji</p>
+                    <p className="text-3xl font-black text-cyan-700">
+                      {dosenDipilih.length}
+                    </p>
+                  </div>
+                  <div className="flex h-12 w-12 items-center justify-center rounded-xl border-[.5px] border-cyan-500 bg-cyan-100 text-2xl">
+                    <Image src="/dosen-active.png" alt="Logo" width={15} height={15} />
+                  </div>
+                </div>
+              </div>
+      
+              <div className="rounded-xl flex-1 border border-blue-100 bg-white p-5 shadow-md">
+                <div className="flex items-center justify-between">
+                  <div>
+                    <p className=" font-medium text-gray-500">SOP Tindakan</p>
+                    <p className="text-3xl font-black text-blue-700">
+                      {SOPDipilih.length}
+                    </p>
+                  </div>
+                  <div className="flex h-12 w-12 items-center justify-center rounded-xl border-[.5px] border-blue-500 bg-blue-100 text-2xl">
+                    <Image src="/doctor-active.png" alt="Logo" width={15} height={15} />
+                  </div>
+                </div>
+              </div>
+            </div> */}
+      
+            {/* TAB MENU */}
+            <div className="rounded-xl border border-green-600 bg-white/80 p-3 shadow-lg backdrop-blur">
+            <div className="grid grid-cols-2 gap-3">
+              {tabMenus.map((tab) => (
+                <button
+                  key={tab.key}
+                  onClick={() => setIsPilih(tab.key)}
+                  className={`
+                    rounded-xl px-3 py-5 font-bold transition-all duration-200
+                    ${
+                      isPilih === tab.key
+                        ? "bg-gradient-to-r from-emerald-600 to-cyan-600 text-white shadow-lg"
+                        : "bg-[#ddf0f7] text-gray-600 hover:bg-[#cbe1e9] hover:text-emerald-700"
+                    }
+                  `}
+                >
+                  <div className="flex min-h-[95px] flex-col items-center justify-center gap-2">
+                    {tab.key === "mahasiswa" && (
+                      <Image
+                        src={isPilih === tab.key ? "/user.png" : "/user-active.png"}
+                        alt="Logo"
+                        width={16}
+                        height={16}
+                      />
+                    )}
 
-                <div className="w-[90%] h-[400px] bg-white rounded-lg flex flex-col justify-start items-center gap-1 p-3 shadow-lg overflow-auto scrollbar-hidden border-1 border-gray-500">
-                {siswaList.map((item, index) => {
+                    {tab.key === "dosen" && (
+                      <Image
+                        src={isPilih === tab.key ? "/dosen.png" : "/dosen-active.png"}
+                        alt="Logo"
+                        width={16}
+                        height={16}
+                      />
+                    )}
+
+                    {tab.key === "sop" && (
+                      <Image
+                        src={isPilih === tab.key ? "/doctor.png" : "/doctor-active.png"}
+                        alt="Logo"
+                        width={16}
+                        height={16}
+                      />
+                    )}
+
+                    <span
+                      className={`
+                        text-sm
+                        ${
+                          isPilih === tab.key
+                            ? "text-white"
+                            : tab.key === "mahasiswa"
+                            ? "text-green-800"
+                            : tab.key === "dosen"
+                            ? "text-cyan-800"
+                            : "text-blue-800"
+                        }
+                      `}
+                    >
+                      {tab.label}
+                    </span>
+
+                    <span
+                      className={`
+                        flex min-w-[76px] items-center justify-center rounded-full px-3 py-1 text-xs
+                        ${
+                          isPilih === tab.key
+                            ? "bg-white/20 text-white"
+                            : "bg-white text-gray-500"
+                        }
+                      `}
+                    >
+                      {tab.total}
+                      <span className="hidden lg:inline">&nbsp;dipilih</span>
+                    </span>
+                  </div>
+                </button>
+              ))}
+            </div>
+          </div>
+      
+            {/* MAHASISWA */}
+            {isPilih === "mahasiswa" && (
+              <div className="rounded-xl border border-green-600 bg-white p-6 px-7 shadow-xl">
+                <div className="mb-4 flex items-center justify-between gap-3">
+                  <div>
+                    <h2 className="text-xl font-black text-gray-800">
+                      Pilih Mahasiswa
+                    </h2>
+                    <p className=" text-gray-500">
+                      Mahasiswa yang dipilih akan masuk ke sesi ujian.
+                    </p>
+                  </div>
+      
+                  <button
+                    onClick={() => setIsSiswaDipilihDetail(true)}
+                    className="rounded-lg bg-emerald-100 px-4 py-2  font-bold border-[.5px] border-[#5feaa0] text-emerald-700 hover:bg-emerald-200"
+                  >
+                    Lihat {siswaDipilih.length}
+                  </button>
+                </div>
+                <div className="mb-4">
+                  <input
+                    type="text"
+                    value={searchMahasiswa}
+                    onChange={(e) => setSearchMahasiswa(e.target.value)}
+                    placeholder="Cari nama, NIM, atau kelas mahasiswa..."
+                    className="w-full rounded-xl border border-emerald-200 bg-emerald-50/50 px-4 py-3 font-semibold text-gray-700 outline-none transition focus:border-emerald-500 focus:bg-white focus:ring-4 focus:ring-emerald-100"
+                  />
+                </div>
+      
+                <div className="h-[430px] space-y-3 overflow-auto pr-1">
+                  {filteredSiswaList.map((item, index) => {
                     const isSelected = siswaDipilih.includes(item.id);
+      
                     return (
-                        <div
-                            key={index}
-                            className="w-full flex justify-between items-center border border-gray-400 rounded-md px-4 py-3"
-                        >
-                            <div className="flex items-center gap-3">
-                                {isSelected && (
-                                    <div className='w-[10px] h-[10px] bg-green-500 rounded-full'/>
-                                )}
-                                <p>{item.nama_lengkap}</p>
-                            </div>
-                            <button
-                                onClick={() => {
-                                    if (isSelected) {
-                                        setSiswaDipilih(
-                                            siswaDipilih.filter(
-                                                (id) => id !== item.id
-                                            )
-                                        );
-                                    } else {
-                                        setSiswaDipilih([
-                                            ...siswaDipilih,
-                                            item.id
-                                        ]);
-                                    }
-                                }}
-                                className={`
-                                    px-4 py-2 rounded-md text-white
-                                    ${isSelected ? "bg-red-500" : "bg-blue-500"}
-                                `}
-                            >
-                                {isSelected ? "Batal" : "Pilih"}
-                            </button>
+                      <div
+                        key={index}
+                        className={`
+                          flex w-full items-center justify-between rounded-xl border px-4 py-4 transition-all
+                          ${
+                            isSelected
+                              ? "border-green-500 bg-emerald-50 shadow-sm"
+                              : "border-gray-100 bg-white hover:border-green-700 hover:bg-emerald-50/40"
+                          }
+                        `}
+                      >
+                        <div className="flex items-center gap-3">
+                          <div
+                            className={`
+                              flex h-11 w-11 items-center justify-center rounded-xl font-black
+                              ${
+                                isSelected
+                                  ? "bg-emerald-600 text-white"
+                                  : "bg-gray-100 text-gray-500"
+                              }
+                            `}
+                          >
+                            {isSelected ? "✓" : "M"}
+                          </div>
+      
+                          <div>
+                            <p className="font-bold text-gray-800">
+                              {item.nama_lengkap}
+                            </p>
+                            <p className="text-xs text-gray-500">
+                              Kelas : {item.kelas}
+                            </p>
+                          </div>
                         </div>
-                    )
-                    })}
+      
+                        <button
+                          onClick={() => {
+                            if (isSelected) {
+                              setSiswaDipilih(
+                                siswaDipilih.filter((id) => id !== item.id)
+                              );
+                            } else {
+                              setSiswaDipilih([...siswaDipilih, item.id]);
+                            }
+                          }}
+                          className={`
+                            rounded-lg px-4 py-2  font-bold text-white transition
+                            ${
+                              isSelected
+                                ? "bg-[#ff186d] hover:bg-[#ff75a7]"
+                                : "bg-emerald-600 hover:bg-emerald-700"
+                            }
+                          `}
+                        >
+                          {isSelected ? "Batal" : "Pilih"}
+                        </button>
+                      </div>
+                    );
+                  })}
                 </div>
-            </>
-        )}
-        
-        
-        {isPilih === 'dosen' && (
-            <>
-                <div className="w-[90%] bg-white rounded-lg flex flex-row justify-between items-center gap-1 p-3 shadow-lg overflow-auto scrollbar-hidden border-1 border-gray-500 mb-2">
-                    <p>Total Dosen dipilih</p>
-                    <div className='flex flex-row gap-2 items-center'>
-                        <p>{dosenDipilih.length}</p>
-                        <button onClick={()=>{setIsDosenDipilihDetail(true)}} className='bg-black px-3 p-2 rounded-md text-white'>lihat</button>
-                    </div>
+              </div>
+            )}
+      
+            {/* DOSEN */}
+            {isPilih === "dosen" && (
+              <div className="rounded-xl border border-cyan-100 bg-white p-5 shadow-xl">
+                <div className="mb-4 flex items-center justify-between gap-3">
+                  <div>
+                    <h2 className="text-xl font-black text-gray-800">
+                      Pilih Dosen Penguji
+                    </h2>
+                    <p className=" text-gray-500">
+                      Dosen akan dimasukkan sebagai penguji dalam sesi OSCE.
+                    </p>
+                  </div>
+      
+                  <button
+                    onClick={() => setIsDosenDipilihDetail(true)}
+                    className="rounded-lg bg-cyan-100 px-4 py-2  font-bold text-cyan-700 hover:bg-cyan-200"
+                  >
+                    Lihat {dosenDipilih.length}
+                  </button>
                 </div>
-
-                <div className="w-[90%] h-[400px] bg-white rounded-lg flex flex-col justify-start items-center gap-1 p-3 shadow-lg overflow-auto scrollbar-hidden border-1 border-gray-500">
-                {dosenList.map((item, index) => {
+      
+                <div className="h-[430px] space-y-3 overflow-auto pr-1">
+                  {dosenList.map((item, index) => {
                     const isSelected = dosenDipilih.includes(item.id);
+      
                     return (
-                        <div
-                            key={index}
-                            className="w-full flex justify-between items-center border border-gray-400 rounded-md px-4 py-3"
-                        >
-                            <div className="flex items-center gap-3">
-                                {isSelected && (
-                                    <div className='w-[10px] h-[10px] bg-green-500 rounded-full'/>
-                                )}
-                                <p>{item.nama_lengkap}</p>
-                            </div>
-                            <button
-                                onClick={() => {
-                                    if (isSelected) {
-                                        setDosenDipilih(
-                                            dosenDipilih.filter(
-                                                (id) => id !== item.id
-                                            )
-                                        );
-                                    } else {
-                                        setDosenDipilih([
-                                            ...dosenDipilih,
-                                            item.id
-                                        ]);
-                                    }
-                                }}
-                                className={`
-                                    px-4 py-2 rounded-md text-white
-                                    ${isSelected ? "bg-red-500" : "bg-blue-500"}
-                                `}
-                            >
-                                {isSelected ? "Batal" : "Pilih"}
-                            </button>
+                      <div
+                        key={index}
+                        className={`
+                          flex w-full items-center justify-between rounded-xl border px-4 py-4 transition-all
+                          ${
+                            isSelected
+                              ? "border-cyan-300 bg-cyan-50 shadow-sm"
+                              : "border-gray-100 bg-white hover:border-cyan-200 hover:bg-cyan-50/40"
+                          }
+                        `}
+                      >
+                        <div className="flex items-center gap-3">
+                          <div
+                            className={`
+                              flex h-11 w-11 items-center justify-center rounded-xl font-black
+                              ${
+                                isSelected
+                                  ? "bg-cyan-600 text-white"
+                                  : "bg-gray-100 text-gray-500"
+                              }
+                            `}
+                          >
+                            {isSelected ? "✓" : "D"}
+                          </div>
+      
+                          <div>
+                            <p className="font-bold text-gray-800">
+                              {item.nama_lengkap}
+                            </p>
+                            <p className="text-xs text-gray-500">
+                              Penguji keterampilan keperawatan
+                            </p>
+                          </div>
                         </div>
-                    )
-                    })}
+      
+                        <button
+                          onClick={() => {
+                            if (isSelected) {
+                              setDosenDipilih(
+                                dosenDipilih.filter((id) => id !== item.id)
+                              );
+                            } else {
+                              setDosenDipilih([...dosenDipilih, item.id]);
+                            }
+                          }}
+                          className={`
+                            rounded-lg px-4 py-2  font-bold text-white transition
+                            ${
+                              isSelected
+                                ? "bg-[#ff186d] hover:bg-[#ff75a7]"
+                                : "bg-cyan-600 hover:bg-cyan-700"
+                            }
+                          `}
+                        >
+                          {isSelected ? "Batal" : "Pilih"}
+                        </button>
+                      </div>
+                    );
+                  })}
                 </div>
-            </>
-        )}
-        
-        
-        {isPilih === 'sop' && (
-            <>
-                <div className="w-[90%] bg-white rounded-lg flex flex-row justify-between items-center gap-1 p-3 shadow-lg overflow-auto scrollbar-hidden border-1 border-gray-500 mb-2">
-                    <p>Total SOP dipilih</p>
-                    <div className='flex flex-row gap-2 items-center'>
-                        <p>{SOPDipilih.length}</p>
-                        <button onClick={()=>{setIsSOPDipilihDetail(true)}} className='bg-black px-3 p-2 rounded-md text-white'>lihat</button>
-                    </div>
+              </div>
+            )}
+      
+            {/* SOP */}
+            {isPilih === "sop" && (
+              <div className="rounded-xl border border-blue-100 bg-white p-5 shadow-xl">
+                <div className="mb-4 flex items-center justify-between gap-3">
+                  <div>
+                    <h2 className="text-xl font-black text-gray-800">
+                      Pilih SOP Tindakan
+                    </h2>
+                    <p className=" text-gray-500">
+                      Pilih tindakan keperawatan yang akan diujikan.
+                    </p>
+                  </div>
+      
+                  <button
+                    onClick={() => setIsSOPDipilihDetail(true)}
+                    className="rounded-lg bg-blue-100 px-4 py-2 border-[.5px] border-[#50b0e8] font-bold text-blue-700 hover:bg-blue-200"
+                  >
+                    Lihat {SOPDipilih.length}
+                  </button>
                 </div>
-
-                <div className="w-[90%] h-[400px] bg-white rounded-lg flex flex-col justify-start items-center gap-1 p-3 shadow-lg overflow-auto scrollbar-hidden border-1 border-gray-500">
-                {soalSOPJenisList.map((item, index) => {
+                <div className="mb-4">
+                  <input
+                    type="text"
+                    value={searchSOP}
+                    onChange={(e) => setSearchSOP(e.target.value)}
+                    placeholder="Cari nama SOP tindakan..."
+                    className="w-full rounded-xl border border-blue-200 bg-blue-50/50 px-4 py-3 font-semibold text-gray-700 outline-none transition focus:border-blue-500 focus:bg-white focus:ring-4 focus:ring-blue-100"
+                  />
+                </div>
+      
+                <div className="h-[430px] space-y-3 overflow-auto pr-1">
+                  {filteredSOPList.map((item, index) => {
                     const isSelected = SOPDipilih.includes(item);
+      
                     return (
-                        <div
-                            key={index}
-                            className="w-full flex justify-between items-center border border-gray-400 rounded-md px-4 py-3"
+                      <div
+                        key={index}
+                        className={`
+                          flex w-full items-center justify-between rounded-xl border px-4 py-4 transition-all
+                          ${
+                            isSelected
+                              ? "border-blue-300 bg-blue-50 shadow-sm"
+                              : "border-gray-100 bg-white hover:border-[#1584c5] hover:bg-blue-50/40"
+                          }
+                        `}
+                      >
+                        <div className="flex items-center gap-3">
+                          <div
+                            className={`
+                              flex h-11 w-11 items-center justify-center rounded-xl text-lg font-black
+                              ${
+                                isSelected
+                                  ? "bg-blue-600 text-white"
+                                  : "bg-gray-100 text-gray-500"
+                              }
+                            `}
+                          >
+                            {isSelected ? (
+                                <p>✓</p>
+                            ):(
+                                <Image src="/doctor-active.png" alt="Logo" width={15} height={15} />
+                            )}
+                          </div>
+      
+                          <div>
+                            <p className="font-bold text-gray-800">{item}</p>
+                            <p className="text-xs text-gray-500">
+                              Standar operasional tindakan keperawatan
+                            </p>
+                          </div>
+                        </div>
+      
+                        <button
+                          onClick={() => {
+                            if (isSelected) {
+                              setSOPDipilih(
+                                SOPDipilih.filter((nama) => nama !== item)
+                              );
+                            } else {
+                              setSOPDipilih([...SOPDipilih, item]);
+                            }
+                          }}
+                          className={`
+                            rounded-lg px-4 py-2  font-bold text-white transition
+                            ${
+                              isSelected
+                                ? "bg-[#ff186d] hover:bg-[#ff75a7]"
+                                : "bg-blue-600 hover:bg-blue-700"
+                            }
+                          `}
                         >
-                            <div className="flex items-center gap-3">
-                                {isSelected && (
-                                    <div className='w-[10px] h-[10px] bg-green-500 rounded-full'/>
-                                )}
-                                <p>{item}</p>
-                            </div>
-                            <button
-                                onClick={() => {
-                                    if (isSelected) {
-                                        setSOPDipilih(
-                                            SOPDipilih.filter(
-                                                (nama) => nama !== item
-                                            )
-                                        );
-                                    } else {
-                                        setSOPDipilih([
-                                            ...SOPDipilih,
-                                            item
-                                        ]);
-                                    }
-                                }}
-                                className={`
-                                    px-4 py-2 rounded-md text-white
-                                    ${isSelected ? "bg-red-500" : "bg-blue-500"}
-                                `}
-                            >
-                                {isSelected ? "Batal" : "Pilih"}
-                            </button>
-                        </div>
-                    )
-                    })}
+                          {isSelected ? "Batal" : "Pilih"}
+                        </button>
+                      </div>
+                    );
+                  })}
                 </div>
-            </>
-        )}
-        
+              </div>
+            )}
+      
+            {/* BUTTON BUAT SESI */}
+            <button
+              onClick={() => setIsMulai(true)}
+              disabled={siswaDipilih.length === 0 || SOPDipilih.length === 0}
+              className={`rounded-xl bg-gradient-to-r from-emerald-600 to-cyan-600 p-4 text-base font-black text-white shadow-xl transition hover:scale-[1.01] hover:from-emerald-700 hover:to-cyan-700 ${(siswaDipilih.length === 0 || SOPDipilih.length === 0)&&'opacity-30'}`}
+            >
+              + Buat Sesi Test Keperawatan
+            </button>
+      
+            {/* MODAL DETAIL MAHASISWA */}
+            {isSiswaDipilihDetail && (
+              <>
+                <div className="fixed inset-0 z-40 bg-slate-950/70 backdrop-blur-sm" />
+                <div className="fixed left-1/2 top-1/2 z-50 flex h-[520px] w-[92%] max-w-2xl -translate-x-1/2 -translate-y-1/2 flex-col rounded-xl bg-white p-5 shadow-2xl">
+                  <h3 className="text-xl font-black text-gray-800">
+                    Mahasiswa Dipilih
+                  </h3>
+                  <p className="mb-4  text-gray-500">
+                    Total {selectedSiswa.length} mahasiswa
+                  </p>
+      
+                  <div className="flex-1 space-y-2 overflow-auto pb-4">
+                    {selectedSiswa.map((item, index) => (
+                      <div
+                        key={index}
+                        className="rounded-xl border border-emerald-100 bg-emerald-50 px-4 py-3 font-semibold text-gray-700"
+                      >
+                        {item.nama_lengkap}
+                      </div>
+                    ))}
+                  </div>
+      
+                  <button
+                    onClick={() => setIsSiswaDipilihDetail(false)}
+                    className="rounded-xl bg-gray-900 p-3 font-bold text-white"
+                  >
+                    Tutup
+                  </button>
+                </div>
+              </>
+            )}
+      
+            {/* MODAL DETAIL DOSEN */}
+            {isDosenDipilihDetail && (
+              <>
+                <div className="fixed inset-0 z-40 bg-slate-950/70 backdrop-blur-sm" />
+                <div className="fixed left-1/2 top-1/2 z-50 flex h-[520px] w-[92%] max-w-2xl -translate-x-1/2 -translate-y-1/2 flex-col rounded-xl bg-white p-5 shadow-2xl">
+                  <h3 className="text-xl font-black text-gray-800">
+                    Dosen Dipilih
+                  </h3>
+                  <p className="mb-4  text-gray-500">
+                    Total {selectedDosen.length} dosen
+                  </p>
+      
+                  <div className="flex-1 space-y-2 overflow-auto pb-4">
+                    {selectedDosen.map((item, index) => (
+                      <div
+                        key={index}
+                        className="rounded-xl border border-cyan-100 bg-cyan-50 px-4 py-3 font-semibold text-gray-700"
+                      >
+                        {item.nama_lengkap}
+                      </div>
+                    ))}
+                  </div>
+      
+                  <button
+                    onClick={() => setIsDosenDipilihDetail(false)}
+                    className="rounded-xl bg-gray-900 p-3 font-bold text-white"
+                  >
+                    Tutup
+                  </button>
+                </div>
+              </>
+            )}
+      
+            {/* MODAL DETAIL SOP */}
+            {isSOPDipilihDetail && (
+              <>
+                <div className="fixed inset-0 z-40 bg-slate-950/70 backdrop-blur-sm" />
+                <div className="fixed left-1/2 top-1/2 z-50 flex h-[520px] w-[92%] max-w-2xl -translate-x-1/2 -translate-y-1/2 flex-col rounded-xl bg-white p-5 shadow-2xl">
+                  <h3 className="text-xl font-black text-gray-800">
+                    SOP Dipilih
+                  </h3>
+                  <p className="mb-4  text-gray-500">
+                    Total {selectedSOP.length} SOP tindakan
+                  </p>
+      
+                  <div className="flex-1 space-y-2 overflow-auto pb-4">
+                    {selectedSOP.map((item, index) => (
+                      <div
+                        key={index}
+                        className="rounded-xl border border-blue-100 bg-blue-50 px-4 py-3 font-semibold text-gray-700"
+                      >
+                        {item}
+                      </div>
+                    ))}
+                  </div>
+      
+                  <button
+                    onClick={() => setIsSOPDipilihDetail(false)}
+                    className="rounded-xl bg-gray-900 p-3 font-bold text-white"
+                  >
+                    Tutup
+                  </button>
+                </div>
+              </>
+            )}
+      
+            {/* MODAL KONFIRMASI */}
+            {isMulai && (
+              <>
+                <div className="fixed inset-0 z-40 bg-slate-950/70 backdrop-blur-sm" />
+                <div className="fixed left-1/2 top-1/2 z-50 w-[92%] max-w-xl -translate-x-1/2 -translate-y-1/2 rounded-xl bg-white p-6 shadow-2xl">
+                  <div className="mb-5 text-center">
+                    <div className="mx-auto mb-3 flex h-16 w-16 items-center justify-center rounded-xl bg-green-100 text-3xl">
+                        <Image src="/doctor-b.png" alt="Logo" width={25} height={25} />
+                    </div>
+                    <h3 className="text-2xl font-black text-gray-800">
+                      Mulai Sesi Test?
+                    </h3>
+                    <p className="mt-2  text-gray-500">
+                      Pastikan data mahasiswa, dosen, dan SOP sudah benar sebelum membuat sesi.
+                    </p>
+                  </div>
+      
+                  <div className="mb-5 flex flex-row gap-3">
+                    <div className="rounded-xl flex-1 border border-emerald-100 bg-emerald-50 p-4 text-center">
+                      <p className="text-xs font-semibold text-gray-500">
+                        Mahasiswa
+                      </p>
+                      <p className="text-2xl font-black text-emerald-700">
+                        {siswaDipilih.length}
+                      </p>
+                    </div>
+      
+                    {/* <div className="rounded-xl border border-cyan-100 bg-cyan-50 p-4 text-center">
+                      <p className="text-xs font-semibold text-gray-500">
+                        Dosen
+                      </p>
+                      <p className="text-2xl font-black text-cyan-700">
+                        {dosenDipilih.length}
+                      </p>
+                    </div> */}
+      
+                    <div className="rounded-xl flex-1 border border-blue-100 bg-blue-50 p-4 text-center">
+                      <p className="text-xs font-semibold text-gray-500">
+                        SOP
+                      </p>
+                      <p className="text-2xl font-black text-blue-700">
+                        {SOPDipilih.length}
+                      </p>
+                    </div>
+                  </div>
+      
+                  <div className="flex flex-col gap-2">
+                    <button
+                      onClick={() => handleSubmit()}
+                      disabled={isLoading}
+                      className="rounded-xl bg-gradient-to-r from-emerald-600 to-cyan-600 p-3 font-black text-white hover:from-emerald-700 hover:to-cyan-700"
+                    >
+                      {isLoading ? "Membuat Sesi..." : "Ya, Buat Sesi Sekarang"}
+                    </button>
+      
+                    <button
+                      onClick={() => setIsMulai(false)}
+                      className="rounded-xl bg-gray-900 p-3 font-bold text-white hover:bg-black"
+                    >
+                      Batal
+                    </button>
+                  </div>
+                </div>
+              </>
+            )}
 
-        <button onClick={()=>{setIsMulai(true)}} className='bg-black w-[90%] mt-3 p-3 bottom-2 rounded-md text-white font-bold'>Buat Sesi Test</button>
-
-        {isSiswaDipilihDetail && (
-            <>
-                <div className='fixed top-0 bottom-0 right-0 left-0 bg-black opacity-80'/>
-                <div className="fixed w-[90%] h-[500px] bg-white rounded-lg flex flex-col justify-start items-center gap-1 p-3 shadow-lg overflow-auto scrollbar-hidden border-1 border-gray-500 mt-2">
-                    <div className='w-full flex flex-col justify-between items-center px-4 py-3 overflow-auto scrollbar-hidden gap-2 pb-[100px]'>
-                        {siswaList
-                            .filter((item) => siswaDipilih.includes(item.id))
-                            .map((item, index) => {
-                                return (
-                                    <div
-                                        key={index}
-                                        className="w-full flex justify-between items-center border border-gray-400 rounded-md px-4 py-3"
-                                    >
-                                        <p>{item.nama_lengkap}</p>
-                                    </div>
-                                );
-                            })
-                        }
-                    </div>
-                    <button onClick={()=>{setIsSiswaDipilihDetail(false)}} className='bg-black w-[95%] p-3 bottom-2 rounded-md text-white absolute '>Tutup</button>
-                </div>
-            </>
-        )}
-        
-        {isDosenDipilihDetail && (
-            <>
-                <div className='fixed top-0 bottom-0 right-0 left-0 bg-black opacity-80'/>
-                <div className="fixed w-[90%] h-[500px] bg-white rounded-lg flex flex-col justify-start items-center gap-1 p-3 shadow-lg overflow-auto scrollbar-hidden border-1 border-gray-500 mt-2">
-                    <div className='w-full flex flex-col justify-between items-center px-4 py-3 overflow-auto scrollbar-hidden gap-2 pb-[100px]'>
-                        {dosenList
-                            .filter((item) => dosenDipilih.includes(item.id))
-                            .map((item, index) => {
-                                return (
-                                    <div
-                                        key={index}
-                                        className="w-full flex justify-between items-center border border-gray-400 rounded-md px-4 py-3"
-                                    >
-                                        <p>{item.nama_lengkap}</p>
-                                    </div>
-                                );
-                            })
-                        }
-                    </div>
-                    <button onClick={()=>{setIsDosenDipilihDetail(false)}} className='bg-black w-[95%] p-3 bottom-2 rounded-md text-white absolute '>Tutup</button>
-                </div>
-            </>
-        )}
-        
-        {isSOPDipilihDetail && (
-            <>
-                <div className='fixed top-0 bottom-0 right-0 left-0 bg-black opacity-80'/>
-                <div className="fixed w-[90%] h-[500px] bg-white rounded-lg flex flex-col justify-start items-center gap-1 p-3 shadow-lg overflow-auto scrollbar-hidden border-1 border-gray-500 mt-2">
-                    <div className='w-full flex flex-col justify-between items-center px-4 py-3 overflow-auto scrollbar-hidden gap-2 pb-[100px]'>
-                        {soalSOPJenisList
-                            .filter((item) => SOPDipilih.includes(item))
-                            .map((item, index) => {
-                                return (
-                                    <div
-                                        key={index}
-                                        className="w-full flex justify-between items-center border border-gray-400 rounded-md px-4 py-3"
-                                    >
-                                        <p>{item}</p>
-                                    </div>
-                                );
-                            })
-                        }
-                    </div>
-                    <button onClick={()=>{setIsSOPDipilihDetail(false)}} className='bg-black w-[95%] p-3 bottom-2 rounded-md text-white absolute '>Tutup</button>
-                </div>
-            </>
-        )}
-        
-        {isMulai && (
-            <>
-                <div className='fixed top-0 bottom-0 right-0 left-0 bg-black opacity-80'/>
-                <div className="fixed w-[90%]  bg-white rounded-lg flex flex-col justify-between items-center gap-1 p-3 shadow-lg overflow-auto scrollbar-hidden border-1 border-gray-500 mt-2">
-                    <p>apakah yakin anda mau mulai buat sesi test ?</p>
-                    <div className='w-full flex flex-row justify-center items-center gap-2 mb-3'>
-                        <div className='flex flex-1 flex-col items-center justify-center gap-1 border-1  border-gray-300 p-3'>
-                            <p>Mahasiswa</p>
-                            <p>{siswaDipilih.length}</p>
-                        </div>
-                        <div className='flex flex-1 flex-col items-center justify-center gap-1 border-1  border-gray-300 p-3'>
-                            <p>Dosen</p>
-                            <p>{dosenDipilih.length}</p>
-                        </div>
-                        <div className='flex flex-1 flex-col items-center justify-center gap-1 border-1  border-gray-300 p-3'>
-                            <p>SOP</p>
-                            <p>{SOPDipilih.length}</p>
-                        </div>
-                    </div>
-                    <div className='w-full flex flex-col gap-1'>
-                        <button onClick={()=>{handleSubmit()}} className='bg-blue-500 w-full p-3 bottom-2 rounded-md text-white'>Mulai</button>
-                        <button onClick={()=>{setIsMulai(false)}} className='bg-black w-full p-3 bottom-2 rounded-md text-white'>Tutup</button>
-                    </div>
-                </div>
-            </>
-        )}
-
-        
-    </div>
-  )
+            
+          </div>
+        </div>
+      );
 }
 
 export default Page

@@ -14,3 +14,7 @@ export type UserTestGroup = {
   userId: number;
   tests: TestType[];
 };
+
+export type updateTestType = {
+  total_nilai: number;
+}

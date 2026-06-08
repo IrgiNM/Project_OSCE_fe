@@ -26,22 +26,22 @@ export const setToken = async (token: string) => {
 
 export const setMahasiswaPilihan = async (data: number[]) => {
   localStorage.setItem("mahasiswa", JSON.stringify(data));
-  alert("Mahasiswa pilihan berhasil disimpan!");
+  // alert("Mahasiswa pilihan berhasil disimpan!");
 };
 
 export const setDosenPilihan = async (data: number[]) => {
   localStorage.setItem("dosen", JSON.stringify(data));
-  alert("Dosen pilihan berhasil disimpan!");
+  // alert("Dosen pilihan berhasil disimpan!");
 };
 
 export const setSOPPilihan = async (data: string[]) => {
   localStorage.setItem("sop", JSON.stringify(data));
-  alert("SOP pilihan berhasil disimpan!");
+  // alert("SOP pilihan berhasil disimpan!");
 };
 
 export const setSesiPilihan = async (data: number) => {
   localStorage.setItem("sesi", data.toString());
-  alert("Sesi Ujian pilihan berhasil disimpan!");
+  // alert("Sesi Ujian pilihan berhasil disimpan!");
 };
 
 export async function logoutUser() {
