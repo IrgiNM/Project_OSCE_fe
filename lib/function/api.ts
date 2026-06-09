@@ -7,7 +7,7 @@ import { createTestType } from "@/type/detailTestType";
 import { UpdateDetailTestType } from "@/type/updateDetailTestType";
 import { updateTestType } from "@/type/testType";
 
-export const BASEURL = "http://projectoscebe-production.up.railway.app/";
+export const BASEURL = "https://projectoscebe-production.up.railway.app/";
 
 export const api = axios.create({
   baseURL: BASEURL,
