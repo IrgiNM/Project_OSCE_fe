@@ -1,9 +1,10 @@
 "use client"
 import dataSiswa from '@/lib/data/dataSiswa';
 import dataTest from '@/lib/data/dataTest';
-import { getDetailTestById, updateDetailTest, updateTest } from '@/lib/function/api';
+import { getDetailSop, getDetailTestById, updateDetailTest, updateTest } from '@/lib/function/api';
 import { getInitials } from '@/lib/function/initial';
 import { getMahasiswaPilihan } from '@/lib/function/token'
+import { detailSoalType } from '@/type/detailSoalType';
 import { detailTestType } from '@/type/detailTestType';
 import { UserType } from '@/type/userType';
 import Image from 'next/image';
@@ -32,6 +33,8 @@ const Page = () => {
     const [countKlik, setCountKlik] = useState<number>(0)
 
     const [detailTestData, setDetailTestData] = useState<detailTestType[]>([])
+    const [detailTestIds, setDetailTestIds] = useState<number[]>([]);
+    const [detailSoalData, setDetailSoalData] = useState<detailSoalType[]>([]);
     const [namaSOP, setNamaSOP] = useState<string>("");
 
     const [dataTestBaru, setDataTestBaru] = useState<{id: number, nilai: number}[]>([]);
@@ -92,6 +95,8 @@ const Page = () => {
                 if(response.status === 200){
                     // alert('Berhasil mengambil detail test')
                     setDetailTestData(response.data)
+                    const ids = response.data.map((item: any) => item.id);
+                    setDetailTestIds(ids);
                 }
             } catch (error) {
                 console.error('Error fetching siswa:', error)
@@ -99,6 +104,31 @@ const Page = () => {
         }
         fetch()
     }, [tesDipilih])
+    
+    useEffect(() => {
+      const fetchData = async () => {
+        try {
+          if (!detailTestIds || detailTestIds.length === 0) {
+            setDetailSoalData([]);
+            return;
+          }
+    
+          const responses = await Promise.all(
+            detailTestIds.map((id) => getDetailSop(id))
+          );
+    
+          const allData: detailSoalType[] = responses
+            .filter((response) => response.status === 200)
+            .flatMap((response) => response.data);
+    
+          setDetailSoalData(allData);
+        } catch (error) {
+          console.error("Error fetching detail SOP:", error);
+        }
+      };
+    
+      fetchData();
+    }, [detailTestIds]);
 
     // useEffect(()=>{
     //     setNamaSOP(detailTestData.length > 0
@@ -247,54 +277,91 @@ const Page = () => {
                     <div className="text-left p-3">Nilai</div>
                   </div>
       
-                  {items.map((item: any, index: number) => (
+                  {items.map((item: any, index: number) => {
+                  const detailSoalBySop = detailSoalData.filter(
+                    (detail) => detail.sop === item.id
+                  );
+
+                  return (
                     <div
                       key={item.id}
-                      className="flex flex-row justify-between border-b border-gray-100 last:border-b-0 items-center hover:bg-emerald-50/30 transition"
+                      className="flex flex-col border-b border-gray-100 last:border-b-0 hover:bg-emerald-50/30 transition"
                     >
-                      <div className="p-3  text-gray-700 leading-6">
-                        <span className="font-black mr-2 text-emerald-700">
-                          {index + 1}.
-                        </span>
-                        {item.soal_sop_detail.soal}
-                      </div>
-      
-                      <div className="flex flex-col justify-center items-center gap-2 p-3 lg:flex-row">
-                        <p className='opacity-50 mr-5'>bobot : {item.soal_sop_detail.bobot}</p>
-                        <div className="flex justify-center">
-                          <button
-                            onClick={() => {
-                              handleUpdate(item.test, item.soal_sop, 1);
-                              handleUpdate2(item.id, 1);
-                            }}
-                            className={`px-4 h-9 rounded-lg border font-black transition ${
-                              item.nilai === 1
-                                ? "bg-red-500 text-white border-red-500 shadow-md"
-                                : "bg-white text-gray-500 border-gray-200 hover:bg-red-50 hover:border-red-300 hover:text-red-600"
-                            }`}
-                          >
-                            no
-                          </button>
+                      <div className="flex flex-row justify-between items-center">
+                        <div className="p-3 text-gray-700 leading-6">
+                          <span className="font-black mr-2 text-emerald-700">
+                            {index + 1}.
+                          </span>
+                          {item.soal_sop_detail.soal}
                         </div>
-      
-                        <div className="flex justify-center">
-                          <button
-                            onClick={() => {
-                              handleUpdate(item.test, item.soal_sop, item.soal_sop_detail.bobot);
-                              handleUpdate2(item.id, item.soal_sop_detail.bobot);
-                            }}
-                            className={`h-9 px-4 rounded-lg border font-black transition ${
-                              item.nilai === item.soal_sop_detail.bobot
-                                ? "bg-green-500 text-white border-green-500 shadow-md"
-                                : "bg-white text-gray-500 border-gray-200 hover:bg-green-50 hover:border-green-300 hover:text-green-600"
-                            }`}
-                          >
-                            yes
-                          </button>
+
+                        <div className="flex flex-col justify-center items-center gap-2 p-3 lg:flex-row">
+                          <p className="opacity-50 mr-5">
+                            bobot : {item.soal_sop_detail.bobot}
+                          </p>
+
+                          <div className="flex justify-center">
+                            <button
+                              onClick={() => {
+                                handleUpdate(item.test, item.soal_sop, 1);
+                                handleUpdate2(item.id, 1);
+                              }}
+                              className={`px-4 h-9 rounded-lg border font-black transition ${
+                                item.nilai === 1
+                                  ? "bg-red-500 text-white border-red-500 shadow-md"
+                                  : "bg-white text-gray-500 border-gray-200 hover:bg-red-50 hover:border-red-300 hover:text-red-600"
+                              }`}
+                            >
+                              no
+                            </button>
+                          </div>
+
+                          <div className="flex justify-center">
+                            <button
+                              onClick={() => {
+                                handleUpdate(
+                                  item.test,
+                                  item.soal_sop,
+                                  item.soal_sop_detail.bobot
+                                );
+                                handleUpdate2(item.id, item.soal_sop_detail.bobot);
+                              }}
+                              className={`h-9 px-4 rounded-lg border font-black transition ${
+                                item.nilai === item.soal_sop_detail.bobot
+                                  ? "bg-green-500 text-white border-green-500 shadow-md"
+                                  : "bg-white text-gray-500 border-gray-200 hover:bg-green-50 hover:border-green-300 hover:text-green-600"
+                              }`}
+                            >
+                              yes
+                            </button>
+                          </div>
                         </div>
                       </div>
+
+                      {detailSoalBySop.length > 0 && (
+                        <div className="mx-3 mb-3 rounded-lg border border-emerald-100 bg-emerald-50/50 p-3">
+                          <p className="mb-2 text-sm font-black text-emerald-700">
+                            Detail Soal:
+                          </p>
+
+                          <div className="flex flex-col gap-2">
+                            {detailSoalBySop.map((detail, detailIndex) => (
+                              <div
+                                key={detail.id}
+                                className="rounded-md bg-white p-3 text-sm text-gray-700 shadow-sm border border-gray-100"
+                              >
+                                <span className="font-black text-emerald-700 mr-2">
+                                  {detailIndex + 1}.
+                                </span>
+                                {detail.deskripsi_soal}
+                              </div>
+                            ))}
+                          </div>
+                        </div>
+                      )}
                     </div>
-                  ))}
+                  );
+                })}
                 </div>
               ))}
             </div>  

@@ -51,6 +51,9 @@ export const getAllJenisSop = () => api.get("api/jenis-sop/list/");
 export const getAllSop = () => api.get("api/soal-sop/list/");
 export const getListSopByName = (data: string) => api.get(`api/soal-sop/list/${data}/`);
 
+// DETAIL SOP
+export const getDetailSop = (id: number) => api.post(`api/detail-sop/${id}/`);
+
 // TEST
 export const uploadTest = (data: uploadTestType) => api.post("api/test/create/", data);
 export const getTestById = (data: number) => api.get(`api/test/list/${data}/`);
