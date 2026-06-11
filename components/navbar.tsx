@@ -111,7 +111,7 @@ const Navbar = () => {
             </button>
 
             {/* KIRI */}
-            <div className="w-full rounded-t-xl border-b border-gray-100 bg-gradient-to-br from-emerald-600 to-cyan-600 p-5 text-white md:w-[38%] md:rounded-l-xl md:rounded-tr-none md:border-b-0 md:border-r">
+            <div className="w-full rounded-t-xl border-b border-gray-100 bg-gradient-to-br from-emerald-600 to-cyan-600 p-10 text-white md:w-[38%] md:rounded-l-xl md:rounded-tr-none md:border-b-0 md:border-r">
               <div className="mb-5 flex h-14 w-14 items-center justify-center rounded-xl border-[.5px] border-white bg-white/20 text-2xl font-black backdrop-blur">
                 {namaDosen.charAt(0)}
               </div>
@@ -129,7 +129,7 @@ const Navbar = () => {
             </div>
 
             {/* KANAN */}
-            <div className="flex flex-1 flex-col rounded-b-xl bg-white p-5 md:rounded-r-xl md:rounded-bl-none">
+            <div className="flex flex-1 flex-col rounded-b-xl bg-white p-10 md:rounded-r-xl md:rounded-bl-none">
               <div className="mb-5">
                 <h3 className="text-lg font-black text-gray-800">
                   Detail Profile

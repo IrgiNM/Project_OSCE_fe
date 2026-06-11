@@ -386,7 +386,16 @@ const Page = () => {
                     const isSelected = siswaDipilih.includes(item.id);
       
                     return (
-                      <div
+                      <button
+                        onClick={() => {
+                          if (isSelected) {
+                            setSiswaDipilih(
+                              siswaDipilih.filter((id) => id !== item.id)
+                            );
+                          } else {
+                            setSiswaDipilih([...siswaDipilih, item.id]);
+                          }
+                        }}
                         key={index}
                         className={`
                           flex w-full items-center justify-between rounded-xl border px-4 py-4 transition-all
@@ -442,7 +451,7 @@ const Page = () => {
                         >
                           {isSelected ? "Batal" : "Pilih"}
                         </button>
-                      </div>
+                      </button>
                     );
                   })}
                 </div>

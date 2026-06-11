@@ -95,7 +95,7 @@ const Page = () => {
                 if(response.status === 200){
                     // alert('Berhasil mengambil detail test')
                     setDetailTestData(response.data)
-                    const ids = response.data.map((item: any) => item.id);
+                    const ids = response.data.map((item: any) => item.soal_sop);
                     setDetailTestIds(ids);
                 }
             } catch (error) {
@@ -108,20 +108,37 @@ const Page = () => {
     useEffect(() => {
       const fetchData = async () => {
         try {
+          console.log("id sop :", detailTestIds);
+    
           if (!detailTestIds || detailTestIds.length === 0) {
             setDetailSoalData([]);
             return;
           }
     
           const responses = await Promise.all(
-            detailTestIds.map((id) => getDetailSop(id))
+            detailTestIds.map(async (id) => {
+              const response = await getDetailSop(id);
+    
+              return {
+                id,
+                response,
+              };
+            })
           );
     
+          const successIds = responses
+            .filter((item) => item.response.status === 200)
+            .map((item) => item.id);
+    
           const allData: detailSoalType[] = responses
-            .filter((response) => response.status === 200)
-            .flatMap((response) => response.data);
+            .filter((item) => item.response.status === 200)
+            .flatMap((item) => item.response.data);
     
           setDetailSoalData(allData);
+    
+          if (successIds.length > 0) {
+            alert(`Berhasil mengambil detail SOP dengan id: ${successIds.join(", ")}`);
+          }
         } catch (error) {
           console.error("Error fetching detail SOP:", error);
         }
@@ -279,7 +296,7 @@ const Page = () => {
       
                   {items.map((item: any, index: number) => {
                   const detailSoalBySop = detailSoalData.filter(
-                    (detail) => detail.sop === item.id
+                    (detail) => Number(detail.sop) === Number(item.soal_sop)
                   );
 
                   return (
@@ -340,19 +357,16 @@ const Page = () => {
 
                       {detailSoalBySop.length > 0 && (
                         <div className="mx-3 mb-3 rounded-lg border border-emerald-100 bg-emerald-50/50 p-3">
-                          <p className="mb-2 text-sm font-black text-emerald-700">
+                          {/* <p className="mb-2 text-sm font-black text-emerald-700">
                             Detail Soal:
-                          </p>
+                          </p> */}
 
                           <div className="flex flex-col gap-2">
                             {detailSoalBySop.map((detail, detailIndex) => (
                               <div
                                 key={detail.id}
-                                className="rounded-md bg-white p-3 text-sm text-gray-700 shadow-sm border border-gray-100"
+                                className="rounded-md bg-white p-3 text-gray-700 shadow-sm border border-gray-100"
                               >
-                                <span className="font-black text-emerald-700 mr-2">
-                                  {detailIndex + 1}.
-                                </span>
                                 {detail.deskripsi_soal}
                               </div>
                             ))}
