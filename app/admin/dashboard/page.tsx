@@ -97,7 +97,7 @@ const Page = () => {
               setDetailTestIds(ids);
             }
           } catch (error) {
-            console.error("Error fetching detail test:", error);
+            // console.error("Error fetching detail test:", error);
           }
         };
       
@@ -129,7 +129,7 @@ const Page = () => {
       
             setDetailSoalData(allData);
           } catch (error) {
-            console.error("Error fetching detail SOP:", error);
+            // console.error("Error fetching detail SOP:", error);
           }
         };
       
@@ -175,7 +175,7 @@ const Page = () => {
 
   const handleCetakExcel = () => {
     if (siswaList.length === 0) {
-      alert("Data siswa masih kosong");
+      // alert("Data siswa masih kosong");
       return;
     }
   
@@ -403,12 +403,12 @@ const Page = () => {
 
   const handleCetakExcelPerSiswa = async () => {
     if (!mahasiswaAktif) {
-      alert("Data mahasiswa belum dipilih");
+      // alert("Data mahasiswa belum dipilih");
       return;
     }
   
     if (testUserList.length === 0) {
-      alert("Mahasiswa ini belum memiliki data SOP");
+      // alert("Mahasiswa ini belum memiliki data SOP");
       return;
     }
   
@@ -748,8 +748,8 @@ const Page = () => {
   
       XLSX.writeFile(workbook, `${namaFile}.xlsx`);
     } catch (error) {
-      console.error("Gagal cetak Excel per siswa:", error);
-      alert("Gagal mencetak Excel");
+      // console.error("Gagal cetak Excel per siswa:", error);
+      // alert("Gagal mencetak Excel");
     }
   };
 
@@ -854,14 +854,14 @@ const Page = () => {
                   <span
                     className={`shrink-0 rounded-md border-[.5px] px-3 py-1 text-[10px] font-bold ${
                       (parseFloat((((testAllUserList.filter((test) => Number(test.user) === item.id)).reduce((acc, test) => acc + test.total_nilai, 0) /
-                      (JenisSOPList.length*100))*100).toFixed(2)) > 75)
+                      ((testAllUserList.filter((test) => Number(test.user) === item.id)).length*100))*100).toFixed(2)) > 75)
                         ? "bg-green-500 text-white"
                         : "bg-[#ff056d] text-white"
                     }`}
                   >
                     {(
                       parseFloat((((testAllUserList.filter((test) => Number(test.user) === item.id)).reduce((acc, test) => acc + test.total_nilai, 0) /
-                      (JenisSOPList.length*100))*100).toFixed(2)) > 75
+                      ((testAllUserList.filter((test) => Number(test.user) === item.id)).length*100))*100).toFixed(2)) > 75
                         ? "Lulus"
                         : "Tidak Lulus"
                     )}
@@ -884,10 +884,18 @@ const Page = () => {
                     </p>
                     <p className="text-2xl font-black text-cyan-700">
                       {/* {rataRata} */}
-                      {(
-                        ((testAllUserList.filter((test) => Number(test.user) === item.id)).reduce((acc, test) => acc + test.total_nilai, 0) /
-                        (JenisSOPList.length*100))*100
-                      ).toFixed(2)}
+                      {(() => {
+                        const data = testAllUserList.filter(
+                          (test) => Number(test.user) === Number(item.id)
+                        );
+
+                        return data.length > 0
+                          ? (
+                              data.reduce((acc, test) => acc + Number(test.total_nilai || 0), 0) /
+                              data.length
+                            ).toFixed(2)
+                          : "0.00";
+                      })()}
                     </p>
                   </div>
                 </div>
@@ -961,8 +969,13 @@ const Page = () => {
                   <p className=" text-emerald-50">Rata-rata Nilai</p>
                   <p className="text-xl font-black">
                   {
-                    ((testUserList.reduce((acc, test) => acc + test.total_nilai, 0) /
-                    (JenisSOPList.length*100))*100).toFixed(2)
+                    testUserList.length > 0
+                      ? (
+                          (testUserList.reduce((acc, test) => acc + Number(test.total_nilai || 0), 0) /
+                            (testUserList.length * 100)) *
+                          100
+                        ).toFixed(2)
+                      : "0.00"
                   }  
                   </p>
                 </div>
@@ -974,7 +987,7 @@ const Page = () => {
                   >
                     {(
                       parseFloat(((testUserList.reduce((acc, test) => acc + test.total_nilai, 0) /
-                      (JenisSOPList.length*100))*100).toFixed(2)) > 75
+                      (testUserList.length*100))*100).toFixed(2)) > 75
                         ? "Lulus"
                         : "Tidak Lulus"
                     )}

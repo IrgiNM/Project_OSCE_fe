@@ -14,7 +14,7 @@ const dataSiswa = () => {
                     setSiswaList(response.data)
                 }
             } catch (error) {
-                console.error('Error fetching siswa:', error)
+                // console.error('Error fetching siswa:', error)
             }
         }
         fetchSiswa()
@@ -22,7 +22,7 @@ const dataSiswa = () => {
 
 
     useEffect(()=>{
-        console.error('siswaList:', siswaList)
+        // console.error('siswaList:', siswaList)
     }, [siswaList])
 
     return {siswaList}

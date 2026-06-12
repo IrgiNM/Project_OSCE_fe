@@ -93,13 +93,13 @@ const Page = () => {
             try {
                 const response = await getDetailTestById(tesDipilih);
                 if(response.status === 200){
-                    // alert('Berhasil mengambil detail test')
+                    // // alert('Berhasil mengambil detail test')
                     setDetailTestData(response.data)
                     const ids = response.data.map((item: any) => item.soal_sop);
                     setDetailTestIds(ids);
                 }
             } catch (error) {
-                console.error('Error fetching siswa:', error)
+                // console.error('Error fetching siswa:', error)
             }
         }
         fetch()
@@ -137,10 +137,10 @@ const Page = () => {
           setDetailSoalData(allData);
     
           if (successIds.length > 0) {
-            alert(`Berhasil mengambil detail SOP dengan id: ${successIds.join(", ")}`);
+            // alert(`Berhasil mengambil detail SOP dengan id: ${successIds.join(", ")}`);
           }
         } catch (error) {
-          console.error("Error fetching detail SOP:", error);
+          // console.error("Error fetching detail SOP:", error);
         }
       };
     
@@ -155,12 +155,12 @@ const Page = () => {
 
     const handleUpdateTest = async () => {
         if (tesDipilih === 0) {
-          alert("Pilih SOP terlebih dahulu");
+          // alert("Pilih SOP terlebih dahulu");
           return;
         }
       
         if (detailTestData.length === 0) {
-          alert("Data detail test masih kosong");
+          // alert("Data detail test masih kosong");
           return;
         }
       
@@ -182,12 +182,12 @@ const Page = () => {
           });
       
           if (res.status === 200) {
-            // alert("Update test berhasil");
+            // // alert("Update test berhasil");
             router.push("/admin");
           }
         } catch (error) {
-          console.error("Error update test:", error);
-          alert("Gagal update test");
+          // console.error("Error update test:", error);
+          // alert("Gagal update test");
         } finally {
           setIsLoading(false);
         }
@@ -202,11 +202,11 @@ const Page = () => {
                 nilai: nilai
             });
             if(response.status === 200){
-                // alert('Berhasil update detail test')
+                // // alert('Berhasil update detail test')
                 // router.refresh()
             }
         } catch (error) {
-            console.error('Error updateing siswa:', error)
+            // console.error('Error updateing siswa:', error)
         }
     }
 

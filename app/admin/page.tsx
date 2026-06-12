@@ -62,11 +62,11 @@ const Page = () => {
         const sopResponses = await Promise.all(
             SOPToken.map((nama_sop) => getListSopByName(nama_sop))
         );
-        console.error("SOPToken =", SOPToken);
-        console.error("sopResponses =", sopResponses);
+        // console.error("SOPToken =", SOPToken);
+        // console.error("sopResponses =", sopResponses);
         
         sopResponses.forEach((res, index) => {
-            console.error(`SOP Response ${index}:`, res.data);
+            // console.error(`SOP Response ${index}:`, res.data);
         });
         
         const sopIds = sopResponses
@@ -75,7 +75,7 @@ const Page = () => {
             res.data.map((soal: any) => soal.id)
         );
         
-        console.error("sopIds =", sopIds);
+        // console.error("sopIds =", sopIds);
     
         // 2. ambil test id berdasarkan sesi
         const testRes = await getTestById(Number(sesiToken));
@@ -100,10 +100,10 @@ const Page = () => {
           }
         }
     
-        console.error("Detail SOP created successfully");
+        // console.error("Detail SOP created successfully");
     
       } catch (error) {
-        console.error("Error create detail SOP:", error);
+        // console.error("Error create detail SOP:", error);
       }
     };
 
@@ -133,7 +133,7 @@ const Page = () => {
         const idDosen = Number(localStorage.getItem("id_dosen"));
     
         if (!idDosen) {
-          alert("ID dosen tidak ditemukan. Silakan login ulang.");
+          // alert("ID dosen tidak ditemukan. Silakan login ulang.");
           return;
         }
     
@@ -168,7 +168,7 @@ const Page = () => {
     
         router.push("/admin/testPage");
       } catch (error) {
-        console.error("Error uploading test:", error);
+        // console.error("Error uploading test:", error);
       } finally {
         setIsLoading(false);
       }

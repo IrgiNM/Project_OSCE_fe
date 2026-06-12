@@ -15,7 +15,7 @@ const dataSOP = () => {
                     setSoalSOPList(response.data)
                 }
             } catch (error) {
-                console.error('Error fetching SoalSOP:', error)
+                // console.error('Error fetching SoalSOP:', error)
             }
         }
         fetchSoalSOP()
@@ -30,7 +30,7 @@ const dataSOP = () => {
 
 
     useEffect(()=>{
-        console.error('SoalSOPList:', soalSOPList)
+        // console.error('SoalSOPList:', soalSOPList)
     }, [soalSOPList])
 
     return {

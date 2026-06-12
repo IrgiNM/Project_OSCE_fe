@@ -14,7 +14,7 @@ const dataSesiUjian = () => {
                     setSesiList(response.data)
                 }
             } catch (error) {
-                console.error('Error fetching Sesi:', error)
+                // console.error('Error fetching Sesi:', error)
             }
         }
         fetchSesi()
@@ -22,7 +22,7 @@ const dataSesiUjian = () => {
 
 
     useEffect(()=>{
-        console.error('SesiList:', sesiList)
+        // console.error('SesiList:', sesiList)
     }, [sesiList])
 
     return {sesiList}

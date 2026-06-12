@@ -14,14 +14,14 @@ const dataJenisSOP = () => {
                     setJenisSOPList(response.data)
                 }
             } catch (error) {
-                console.error('Error fetching SoalSOP:', error)
+                // console.error('Error fetching SoalSOP:', error)
             }
         }
         fetchSoalSOP()
     }, [])
 
     // useEffect(()=>{
-    //     console.error('JenisSOPList:', JenisSOPList)
+    //     // console.error('JenisSOPList:', JenisSOPList)
     // }, [JenisSOPList])
 
     return {

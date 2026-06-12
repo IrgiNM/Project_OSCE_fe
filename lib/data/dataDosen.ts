@@ -14,7 +14,7 @@ const dataDosen = () => {
                     setDosenList(response.data)
                 }
             } catch (error) {
-                console.error('Error fetching Dosen:', error)
+                // console.error('Error fetching Dosen:', error)
             }
         }
         fetchDosen()
@@ -22,7 +22,7 @@ const dataDosen = () => {
 
 
     useEffect(()=>{
-        console.error('DosenList:', dosenList)
+        // console.error('DosenList:', dosenList)
     }, [dosenList])
 
     return {dosenList}

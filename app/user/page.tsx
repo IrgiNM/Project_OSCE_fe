@@ -67,7 +67,7 @@ const Page = () => {
   }, [id])
 
   useEffect(()=>{
-    console.error('testUserList:', testUserList[0])
+    // console.error('testUserList:', testUserList[0])
   }, [testUserList])
 
   const handleLogout = () => {

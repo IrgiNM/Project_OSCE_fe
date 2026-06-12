@@ -21,7 +21,7 @@ const dataTest = (idUser?: number) => {
                 const token = localStorage.getItem("sesi") || "0";
                 setSesiToken(token);
             } catch (error) {
-                console.error('Error fetching sesi token:', error);
+                // console.error('Error fetching sesi token:', error);
             }
         }
         fetchSesiToken();
@@ -35,7 +35,7 @@ const dataTest = (idUser?: number) => {
                     setTestAllUserList(response.data)
                 }
             } catch (error) {
-                console.error('Error fetching Test:', error)
+                // console.error('Error fetching Test:', error)
             }
         }
         fetchTest()
@@ -66,7 +66,7 @@ const dataTest = (idUser?: number) => {
                     setTestUserList(response.data);
                 }
             } catch (error) {
-                console.error('Error fetching Test:', error);
+                // console.error('Error fetching Test:', error);
             }
         };
     
@@ -97,7 +97,7 @@ const dataTest = (idUser?: number) => {
                     setTestList(response.data)
                 }
             } catch (error) {
-                console.error('Error fetching Test:', error)
+                // console.error('Error fetching Test:', error)
             }
         }
         fetchTest()
@@ -128,7 +128,7 @@ const dataTest = (idUser?: number) => {
 
 
     useEffect(()=>{
-        console.error('TestList:', testList)
+        // console.error('TestList:', testList)
     }, [testList])
 
     return {testList,userTests,testAllUserList,testUserList,nim,namaLengkap,kelas,email}
