@@ -108,26 +108,34 @@ const Page = () => {
     };
 
     const handleSubmit = async () => {
-      setIsLoading(true)
+      setIsLoading(true);
+    
       try {
         // 1. create sesi
         const res = await createSesiUjian();
         const sesiId = res.data.id;
     
-        // 2. simpan pilihan ke localStorage
+        // 2. simpan pilihan ke localStorage / state
         setMahasiswaPilihan(siswaDipilih);
         setDosenPilihan(dosenDipilih);
         setSOPPilihan(SOPDipilih);
         setSesiPilihan(sesiId);
+    
         const mahasiswaToken: number[] = JSON.parse(
           localStorage.getItem("mahasiswa") || "[]"
         );
-        const dosenToken: number[] = JSON.parse(
-          localStorage.getItem("dosen") || "[]"
-        );
+    
         const SOPToken: string[] = JSON.parse(
           localStorage.getItem("sop") || "[]"
         );
+    
+        // ambil id dosen yang sedang login
+        const idDosen = Number(localStorage.getItem("id_dosen"));
+    
+        if (!idDosen) {
+          alert("ID dosen tidak ditemukan. Silakan login ulang.");
+          return;
+        }
     
         // 3. generate semua request
         const requests = SOPToken.flatMap((nama_sop: string) => {
@@ -139,26 +147,30 @@ const Page = () => {
               total_nilai: 0,
             })
           );
-          const dosenReq = dosenToken.map((id: number) =>
-            uploadTest({
-              sesi: sesiId,
-              user: id,
-              sop: nama_sop,
-              total_nilai: 0,
-            })
-          );
-          return [...mahasiswaReq, ...dosenReq];
+    
+          // dosen hanya 1, dari user login
+          const dosenReq = uploadTest({
+            sesi: sesiId,
+            user: idDosen,
+            sop: nama_sop,
+            total_nilai: 0,
+          });
+    
+          return [...mahasiswaReq, dosenReq];
         });
     
         // 4. execute all
         await Promise.all(requests);
+    
         console.log("Upload success");
+    
         await handleCreateDetailSOP();
+    
         router.push("/admin/testPage");
       } catch (error) {
         console.error("Error uploading test:", error);
-      }finally{
-        setIsLoading(false)
+      } finally {
+        setIsLoading(false);
       }
     };
 
@@ -582,7 +594,16 @@ const Page = () => {
                     const isSelected = SOPDipilih.includes(item);
       
                     return (
-                      <div
+                      <button
+                        onClick={() => {
+                          if (isSelected) {
+                            setSOPDipilih(
+                              SOPDipilih.filter((nama) => nama !== item)
+                            );
+                          } else {
+                            setSOPDipilih([...SOPDipilih, item]);
+                          }
+                        }}
                         key={index}
                         className={`
                           flex w-full items-center justify-between rounded-xl border px-4 py-4 transition-all
@@ -640,7 +661,7 @@ const Page = () => {
                         >
                           {isSelected ? "Batal" : "Pilih"}
                         </button>
-                      </div>
+                      </button>
                     );
                   })}
                 </div>

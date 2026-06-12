@@ -23,6 +23,8 @@ const Navbar = () => {
       if(res.status === 200){
         setNamaDosen(res.data.nama_lengkap);
         setEmailDosen(res.data.email);
+        localStorage.setItem("nama_lengkap", res.data.nama_lengkap);
+        localStorage.setItem("id_dosen", res.data.id);
       }
     }
     fetch();

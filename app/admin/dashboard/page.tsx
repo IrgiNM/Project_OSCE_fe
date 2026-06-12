@@ -4,11 +4,13 @@ import Navbar from "@/components/navbar";
 import dataJenisSOP from "@/lib/data/dataJenisSOP";
 import dataSiswa from "@/lib/data/dataSiswa";
 import dataTest from "@/lib/data/dataTest";
-import { getDetailTestById } from "@/lib/function/api";
+import { getDetailSop, getDetailTestById } from "@/lib/function/api";
+import { detailSoalType } from "@/type/detailSoalType";
 import { detailTestType } from "@/type/detailTestType";
 import { UserType } from "@/type/userType";
 import Image from "next/image";
 import { useEffect, useState } from "react";
+import * as XLSX from "xlsx-js-style";
 
 const Page = () => {
   const { siswaList } = dataSiswa();
@@ -25,7 +27,10 @@ const Page = () => {
   const [tesDipilih, setTesDipilih] = useState<number>(0);
   const [namaSOP, setNamaSOP] = useState<string>("");
   const [detailTestData, setDetailTestData] = useState<detailTestType[]>([]);
+  const [detailTestIds, setDetailTestIds] = useState<number[]>([]);
+  const [detailSoalData, setDetailSoalData] = useState<detailSoalType[]>([]);
   const [mahasiswaAktif, setMahasiswaAktif] = useState<UserType | null>(null);
+  const [sopAktif, setSopAktif] = useState<any>(null);
 
     const groupedData = detailTestData.reduce((acc: any, item) => {
         const category = item.soal_sop_detail.category || "Lainnya";
@@ -78,22 +83,58 @@ const Page = () => {
       })
       .sort((a, b) => b.rataRata - a.rataRata);
 
-    useEffect(() => {
-      if (tesDipilih === 0) return;
-    
-      const fetch = async () => {
-        try {
-          const response = await getDetailTestById(tesDipilih);
-          if (response.status === 200) {
-            setDetailTestData(response.data);
+      useEffect(() => {
+        if (tesDipilih === 0) return;
+      
+        const fetch = async () => {
+          try {
+            const response = await getDetailTestById(tesDipilih);
+      
+            if (response.status === 200) {
+              setDetailTestData(response.data);
+      
+              const ids = response.data.map((item: any) => item.soal_sop);
+              setDetailTestIds(ids);
+            }
+          } catch (error) {
+            console.error("Error fetching detail test:", error);
           }
-        } catch (error) {
-          console.error("Error fetching detail test:", error);
-        }
-      };
-    
-      fetch();
-    }, [tesDipilih]);
+        };
+      
+        fetch();
+      }, [tesDipilih]);
+
+      useEffect(() => {
+        const fetchData = async () => {
+          try {
+            if (!detailTestIds || detailTestIds.length === 0) {
+              setDetailSoalData([]);
+              return;
+            }
+      
+            const responses = await Promise.all(
+              detailTestIds.map(async (id) => {
+                const response = await getDetailSop(id);
+      
+                return {
+                  id,
+                  response,
+                };
+              })
+            );
+      
+            const allData: detailSoalType[] = responses
+              .filter((item) => item.response.status === 200)
+              .flatMap((item) => item.response.data);
+      
+            setDetailSoalData(allData);
+          } catch (error) {
+            console.error("Error fetching detail SOP:", error);
+          }
+        };
+      
+        fetchData();
+      }, [detailTestIds]);
 
     useEffect(()=>{
         setNamaSOP(detailTestData.length > 0
@@ -111,6 +152,606 @@ const Page = () => {
     //   getStatusLulus(item.detail_sop).toLowerCase().includes(keyword)
     );
   });
+
+  const singkatNamaSOP = (nama: string) => {
+    if (!nama) return "-";
+  
+    return nama
+      .replace("Pemeriksaan", "Pem.")
+      .replace("Pemasangan", "Pasang")
+      .replace("Pengukuran", "Ukur")
+      .replace("Tanda-Tanda Vital", "TTV")
+      .replace("Tanda tanda vital", "TTV")
+      .replace("Tekanan Darah", "TD")
+      .replace("Darah", "Drh")
+      .replace("Perawatan", "Rawat")
+      .replace("Luka", "Luka")
+      .replace("Injeksi", "Inj.")
+      .replace("Intramuskular", "IM")
+      .replace("Intravena", "IV")
+      .replace("Subkutan", "SC")
+      .replace("Oral", "Oral");
+  };
+
+  const handleCetakExcel = () => {
+    if (siswaList.length === 0) {
+      alert("Data siswa masih kosong");
+      return;
+    }
+  
+    const daftarSOP = Array.from(
+      new Set(
+        testAllUserList
+          .filter((test) => test.user_detail?.is_staff !== true)
+          .map((test) => test.sop)
+      )
+    ).slice(0, 14);
+  
+    const dataExcel = siswaList.map((siswa, index) => {
+      const testMahasiswa = testAllUserList
+        .filter((test) => {
+          return (
+            Number(test.user) === Number(siswa.id) &&
+            test.user_detail?.is_staff !== true
+          );
+        })
+        .sort((a, b) => Number(a.id) - Number(b.id));
+  
+      const row: any = {
+        No: index + 1,
+        "Nama Siswa": siswa.nama_lengkap,
+        NIM: siswa.nim || "-",
+        Kelas: siswa.kelas,
+      };
+  
+      daftarSOP.forEach((namaSOP, sopIndex) => {
+        const testSOP = testMahasiswa.find(
+          (test) => String(test.sop) === String(namaSOP)
+        );
+  
+        row[`SOP ${sopIndex + 1}`] = testSOP?.total_nilai ?? "-";
+      });
+  
+      for (let i = daftarSOP.length; i < 14; i++) {
+        row[`SOP ${i + 1}`] = "-";
+      }
+  
+      const totalNilai = testMahasiswa.reduce((acc, test) => {
+        return acc + Number(test.total_nilai || 0);
+      }, 0);
+      
+      const jumlahSOPDinilai = testMahasiswa.length;
+      
+      const rataRataNilai =
+        jumlahSOPDinilai > 0
+          ? Number((totalNilai / jumlahSOPDinilai).toFixed(2))
+          : 0;
+      
+      row["Rata-rata Nilai"] = rataRataNilai;
+      row["Status"] = rataRataNilai > 75 ? "Lulus" : "Tidak Lulus";
+      
+      const tanggalTest = testMahasiswa[0]?.created_at || "-";
+      
+      row["Tanggal Test"] =
+        tanggalTest !== "-"
+          ? new Date(tanggalTest).toLocaleDateString("id-ID")
+          : "-";
+  
+      return row;
+    });
+  
+    const dataDaftarSOP = Array.from({ length: 14 }).map((_, index) => {
+      return {
+        "Kode SOP": `SOP ${index + 1}`,
+        "Nama SOP": daftarSOP[index] || "-",
+      };
+    });
+  
+    const workbook = XLSX.utils.book_new();
+  
+    const worksheetNilai = XLSX.utils.json_to_sheet(dataExcel);
+    const worksheetDaftarSOP = XLSX.utils.json_to_sheet(dataDaftarSOP);
+  
+    worksheetNilai["!cols"] = [
+      { wch: 6 },
+      { wch: 32 },
+      { wch: 18 },
+      { wch: 12 },
+      ...Array.from({ length: 14 }).map(() => ({ wch: 10 })),
+      { wch: 18 }, // Rata-rata Nilai
+      { wch: 16 }, // Status
+      { wch: 18 }, // Tanggal Test
+    ];
+  
+    worksheetDaftarSOP["!cols"] = [
+      { wch: 14 },
+      { wch: 70 },
+    ];
+  
+    const headerStyle = {
+      font: {
+        name: "Arial",
+        bold: true,
+        color: { rgb: "FFFFFF" },
+      },
+      fill: {
+        fgColor: { rgb: "0F766E" },
+      },
+      alignment: {
+        horizontal: "center",
+        vertical: "center",
+        wrapText: true,
+      },
+      border: {
+        top: { style: "thin", color: { rgb: "0F766E" } },
+        bottom: { style: "thin", color: { rgb: "0F766E" } },
+        left: { style: "thin", color: { rgb: "0F766E" } },
+        right: { style: "thin", color: { rgb: "0F766E" } },
+      },
+    };
+  
+    const bodyStyle = {
+      font: {
+        name: "Arial",
+        color: { rgb: "111827" },
+      },
+      alignment: {
+        vertical: "center",
+        wrapText: true,
+      },
+      border: {
+        top: { style: "thin", color: { rgb: "D9E2EC" } },
+        bottom: { style: "thin", color: { rgb: "D9E2EC" } },
+        left: { style: "thin", color: { rgb: "D9E2EC" } },
+        right: { style: "thin", color: { rgb: "D9E2EC" } },
+      },
+    };
+  
+    const centerBodyStyle = {
+      ...bodyStyle,
+      alignment: {
+        horizontal: "center",
+        vertical: "center",
+        wrapText: true,
+      },
+    };
+  
+    const greenScoreStyle = {
+      ...centerBodyStyle,
+      font: {
+        name: "Arial",
+        bold: true,
+        color: { rgb: "047857" },
+      },
+    };
+  
+    const emptyScoreStyle = {
+      ...centerBodyStyle,
+      font: {
+        name: "Arial",
+        bold: true,
+        color: { rgb: "9CA3AF" },
+      },
+      fill: {
+        fgColor: { rgb: "F3F4F6" },
+      },
+    };
+  
+    const applyStyleToSheet = (worksheet: any, type: "rekap" | "daftar") => {
+      const range = XLSX.utils.decode_range(worksheet["!ref"] || "A1:A1");
+  
+      for (let row = range.s.r; row <= range.e.r; row++) {
+        for (let col = range.s.c; col <= range.e.c; col++) {
+          const cellAddress = XLSX.utils.encode_cell({ r: row, c: col });
+  
+          if (!worksheet[cellAddress]) continue;
+  
+          if (row === 0) {
+            worksheet[cellAddress].s = headerStyle;
+          } else {
+            if (type === "rekap" && col >= 4 && col <= 17) {
+              worksheet[cellAddress].s =
+                worksheet[cellAddress].v === "-"
+                  ? emptyScoreStyle
+                  : greenScoreStyle;
+            } else if (type === "rekap" && col === 18) {
+              worksheet[cellAddress].s = greenScoreStyle;
+            } else if (type === "rekap" && col === 19) {
+              worksheet[cellAddress].s = {
+                ...centerBodyStyle,
+                font: {
+                  name: "Arial",
+                  bold: true,
+                  color: {
+                    rgb: worksheet[cellAddress].v === "Lulus" ? "047857" : "DC2626",
+                  },
+                },
+                fill: {
+                  fgColor: {
+                    rgb: worksheet[cellAddress].v === "Lulus" ? "DCFCE7" : "FEE2E2",
+                  },
+                },
+              };
+            } else {
+              worksheet[cellAddress].s =
+                col === 0 || col >= 2 ? centerBodyStyle : bodyStyle;
+            }
+          }
+        }
+      }
+  
+      worksheet["!rows"] = Array.from({ length: range.e.r + 1 }).map(
+        (_, index) => {
+          if (index === 0) return { hpt: 28 };
+          return { hpt: 24 };
+        }
+      );
+  
+      worksheet["!autofilter"] = {
+        ref: worksheet["!ref"],
+      };
+    };
+  
+    applyStyleToSheet(worksheetNilai, "rekap");
+    applyStyleToSheet(worksheetDaftarSOP, "daftar");
+  
+    XLSX.utils.book_append_sheet(workbook, worksheetNilai, "Rekap Nilai");
+    XLSX.utils.book_append_sheet(workbook, worksheetDaftarSOP, "Daftar SOP");
+  
+    XLSX.writeFile(workbook, "rekap_nilai_sop_mahasiswa.xlsx");
+  };
+
+  const handleCetakExcelPerSiswa = async () => {
+    if (!mahasiswaAktif) {
+      alert("Data mahasiswa belum dipilih");
+      return;
+    }
+  
+    if (testUserList.length === 0) {
+      alert("Mahasiswa ini belum memiliki data SOP");
+      return;
+    }
+  
+    try {
+      const workbook = XLSX.utils.book_new();
+  
+      for (const sop of testUserList) {
+        const response = await getDetailTestById(sop.id);
+  
+        if (response.status !== 200) continue;
+  
+        const detailData: detailTestType[] = response.data;
+  
+        const detailIds = detailData.map((item: any) => item.soal_sop);
+  
+        const responsesDetailSoal = await Promise.all(
+          detailIds.map(async (id: number) => {
+            const res = await getDetailSop(id);
+  
+            return {
+              id,
+              response: res,
+            };
+          })
+        );
+  
+        const detailSoalSemua: detailSoalType[] = responsesDetailSoal
+          .filter((item) => item.response.status === 200)
+          .flatMap((item) => item.response.data);
+  
+        const totalNilai =
+          detailData.length > 0
+            ? Number(
+                (
+                  (detailData.reduce((acc, item) => acc + item.nilai, 0) /
+                    detailData.reduce((total, item) => {
+                      return total + item.soal_sop_detail.bobot;
+                    }, 0)) *
+                  100
+                ).toFixed(0)
+              )
+            : 0;
+  
+        const namaDosen =
+          testAllUserList.find(
+            (test) =>
+              Number(test.sesi) === Number(sop.sesi) &&
+              test.user_detail?.is_staff === true
+          )?.user_detail?.nama_lengkap || "Unknown";
+  
+        const worksheetData: any[][] = [
+          ["DETAIL NILAI SOP MAHASISWA"],
+          [],
+          ["Nama Siswa", mahasiswaAktif.nama_lengkap || "-"],
+          ["NIM", mahasiswaAktif.nim || "-"],
+          ["Kelas", mahasiswaAktif.kelas || "-"],
+          ["Nama SOP", sop.sop || "-"],
+          ["Total Nilai", totalNilai],
+          ["Nama Dosen", namaDosen],
+          [],
+          ["No", "Soal SOP", "Bobot", "Nilai yang Didapat"],
+        ];
+  
+        detailData.forEach((item, index) => {
+          worksheetData.push([
+            index + 1,
+            item.soal_sop_detail?.soal || "-",
+            item.soal_sop_detail?.bobot || 0,
+            item.nilai ?? 0,
+          ]);
+  
+          const detailSoalBySop = detailSoalSemua.filter(
+            (detail) => Number(detail.sop) === Number(item.soal_sop)
+          );
+  
+          detailSoalBySop.forEach((detail) => {
+            worksheetData.push([
+              "",
+              `• ${detail.deskripsi_soal || "-"}`,
+              "",
+              "",
+            ]);
+          });
+        });
+  
+        const worksheet = XLSX.utils.aoa_to_sheet(worksheetData);
+  
+        worksheet["!cols"] = [
+          { wch: 8 },
+          { wch: 80 },
+          { wch: 12 },
+          { wch: 22 },
+        ];
+  
+        worksheet["!merges"] = [
+          {
+            s: { r: 0, c: 0 },
+            e: { r: 0, c: 3 },
+          },
+        ];
+  
+        const range = XLSX.utils.decode_range(worksheet["!ref"] || "A1:D1");
+  
+        for (let row = range.s.r; row <= range.e.r; row++) {
+          for (let col = range.s.c; col <= range.e.c; col++) {
+            const cellAddress = XLSX.utils.encode_cell({ r: row, c: col });
+  
+            if (!worksheet[cellAddress]) continue;
+  
+            worksheet[cellAddress].s = {
+              font: {
+                name: "Arial",
+                sz: 11,
+              },
+              alignment: {
+                vertical: "center",
+                wrapText: true,
+              },
+              border: {
+                top: { style: "thin", color: { rgb: "D9E2EC" } },
+                bottom: { style: "thin", color: { rgb: "D9E2EC" } },
+                left: { style: "thin", color: { rgb: "D9E2EC" } },
+                right: { style: "thin", color: { rgb: "D9E2EC" } },
+              },
+            };
+          }
+        }
+  
+        worksheet["A1"].s = {
+          font: {
+            name: "Arial",
+            sz: 16,
+            bold: true,
+            color: { rgb: "FFFFFF" },
+          },
+          fill: {
+            fgColor: { rgb: "059669" },
+          },
+          alignment: {
+            horizontal: "center",
+            vertical: "center",
+          },
+        };
+  
+        for (let row = 2; row <= 7; row++) {
+          const labelCell = `A${row + 1}`;
+          const valueCell = `B${row + 1}`;
+  
+          if (worksheet[labelCell]) {
+            worksheet[labelCell].s = {
+              font: {
+                name: "Arial",
+                bold: true,
+                color: { rgb: "064E3B" },
+              },
+              fill: {
+                fgColor: { rgb: "D1FAE5" },
+              },
+              alignment: {
+                vertical: "center",
+              },
+              border: {
+                top: { style: "thin", color: { rgb: "A7F3D0" } },
+                bottom: { style: "thin", color: { rgb: "A7F3D0" } },
+                left: { style: "thin", color: { rgb: "A7F3D0" } },
+                right: { style: "thin", color: { rgb: "A7F3D0" } },
+              },
+            };
+          }
+  
+          if (worksheet[valueCell]) {
+            worksheet[valueCell].s = {
+              font: {
+                name: "Arial",
+                bold: true,
+                color: { rgb: "111827" },
+              },
+              alignment: {
+                vertical: "center",
+                wrapText: true,
+              },
+              border: {
+                top: { style: "thin", color: { rgb: "A7F3D0" } },
+                bottom: { style: "thin", color: { rgb: "A7F3D0" } },
+                left: { style: "thin", color: { rgb: "A7F3D0" } },
+                right: { style: "thin", color: { rgb: "A7F3D0" } },
+              },
+            };
+          }
+        }
+  
+        const tableHeaderRow = 10;
+  
+        ["A", "B", "C", "D"].forEach((col) => {
+          const cell = `${col}${tableHeaderRow}`;
+  
+          if (worksheet[cell]) {
+            worksheet[cell].s = {
+              font: {
+                name: "Arial",
+                bold: true,
+                color: { rgb: "FFFFFF" },
+              },
+              fill: {
+                fgColor: { rgb: "0F766E" },
+              },
+              alignment: {
+                horizontal: "center",
+                vertical: "center",
+              },
+              border: {
+                top: { style: "thin", color: { rgb: "0F766E" } },
+                bottom: { style: "thin", color: { rgb: "0F766E" } },
+                left: { style: "thin", color: { rgb: "0F766E" } },
+                right: { style: "thin", color: { rgb: "0F766E" } },
+              },
+            };
+          }
+        });
+  
+        for (let row = tableHeaderRow + 1; row <= range.e.r + 1; row++) {
+          const noCell = worksheet[`A${row}`];
+          const soalCell = worksheet[`B${row}`];
+          const bobotCell = worksheet[`C${row}`];
+          const nilaiCell = worksheet[`D${row}`];
+  
+          const isDetailSoal = noCell && noCell.v === "";
+  
+          if (isDetailSoal) {
+            ["A", "B", "C", "D"].forEach((col) => {
+              const cell = worksheet[`${col}${row}`];
+  
+              if (cell) {
+                cell.s = {
+                  font: {
+                    name: "Arial",
+                    italic: true,
+                    color: { rgb: "374151" },
+                  },
+                  fill: {
+                    fgColor: { rgb: "ECFDF5" },
+                  },
+                  alignment: {
+                    vertical: "center",
+                    wrapText: true,
+                  },
+                  border: {
+                    top: { style: "thin", color: { rgb: "D1FAE5" } },
+                    bottom: { style: "thin", color: { rgb: "D1FAE5" } },
+                    left: { style: "thin", color: { rgb: "D1FAE5" } },
+                    right: { style: "thin", color: { rgb: "D1FAE5" } },
+                  },
+                };
+              }
+            });
+          } else {
+            if (noCell) {
+              noCell.s = {
+                font: { name: "Arial", bold: true },
+                alignment: { horizontal: "center", vertical: "center" },
+                border: {
+                  top: { style: "thin", color: { rgb: "D9E2EC" } },
+                  bottom: { style: "thin", color: { rgb: "D9E2EC" } },
+                  left: { style: "thin", color: { rgb: "D9E2EC" } },
+                  right: { style: "thin", color: { rgb: "D9E2EC" } },
+                },
+              };
+            }
+  
+            if (soalCell) {
+              soalCell.s = {
+                font: { name: "Arial", color: { rgb: "111827" } },
+                alignment: { vertical: "center", wrapText: true },
+                border: {
+                  top: { style: "thin", color: { rgb: "D9E2EC" } },
+                  bottom: { style: "thin", color: { rgb: "D9E2EC" } },
+                  left: { style: "thin", color: { rgb: "D9E2EC" } },
+                  right: { style: "thin", color: { rgb: "D9E2EC" } },
+                },
+              };
+            }
+  
+            if (bobotCell) {
+              bobotCell.s = {
+                font: { name: "Arial", bold: true },
+                alignment: { horizontal: "center", vertical: "center" },
+                border: {
+                  top: { style: "thin", color: { rgb: "D9E2EC" } },
+                  bottom: { style: "thin", color: { rgb: "D9E2EC" } },
+                  left: { style: "thin", color: { rgb: "D9E2EC" } },
+                  right: { style: "thin", color: { rgb: "D9E2EC" } },
+                },
+              };
+            }
+  
+            if (nilaiCell) {
+              nilaiCell.s = {
+                font: {
+                  name: "Arial",
+                  bold: true,
+                  color: { rgb: Number(nilaiCell.v) > 1 ? "047857" : "DC2626" },
+                },
+                alignment: { horizontal: "center", vertical: "center" },
+                border: {
+                  top: { style: "thin", color: { rgb: "D9E2EC" } },
+                  bottom: { style: "thin", color: { rgb: "D9E2EC" } },
+                  left: { style: "thin", color: { rgb: "D9E2EC" } },
+                  right: { style: "thin", color: { rgb: "D9E2EC" } },
+                },
+              };
+            }
+          }
+        }
+  
+        worksheet["!rows"] = worksheetData.map((_, index) => {
+          if (index === 0) return { hpt: 28 };
+          if (index >= 2 && index <= 7) return { hpt: 22 };
+          if (index === 9) return { hpt: 24 };
+          return { hpt: 35 };
+        });
+  
+        const namaSheet = String(sop.sop || "SOP")
+          .replace(/[\\/:*?"<>|]/g, "")
+          .slice(0, 31);
+  
+        XLSX.utils.book_append_sheet(
+          workbook,
+          worksheet,
+          namaSheet || `SOP ${sop.id}`
+        );
+      }
+  
+      const namaFile = `detail_nilai_${mahasiswaAktif.nama_lengkap}`
+        .replace(/[\\/:*?"<>|]/g, "")
+        .replace(/\s+/g, "_")
+        .toLowerCase();
+  
+      XLSX.writeFile(workbook, `${namaFile}.xlsx`);
+    } catch (error) {
+      console.error("Gagal cetak Excel per siswa:", error);
+      alert("Gagal mencetak Excel");
+    }
+  };
 
   return (
     <div className="min-h-screen w-full bg-gradient-to-br from-emerald-50 via-cyan-50 to-blue-100">
@@ -152,7 +793,7 @@ const Page = () => {
               </p>
             </div>
 
-            <div className="flex w-full flex-col gap-2 sm:max-w-sm sm:flex-row">
+            <div className="flex w-full flex-col gap-2 sm:max-w-xl sm:flex-row">
               <input
                 type="text"
                 value={search}
@@ -169,6 +810,12 @@ const Page = () => {
                   <Image src="/crown.png" alt="Logo" width={12} height={12} />  
                 </div>
                 <p className="ml-1">Peringkat</p>
+              </button>
+              <button
+                onClick={handleCetakExcel}
+                className="rounded-xl bg-gradient-to-r from-green-600 to-emerald-600 px-5 py-3 font-black text-white shadow-md transition hover:scale-[1.02] flex flex-row items-center justify-center w-[200px]"
+              >
+                <p>Cetak Excel</p>
               </button>
             </div>
           </div>
@@ -338,14 +985,23 @@ const Page = () => {
 
             {/* KANAN DETAIL SOP */}
             <div className="flex max-h-[55vh] flex-1 flex-col bg-white p-5 md:max-h-[90vh] rounded-e-xl">
-              <div className="mb-4">
-                <h3 className="text-xl font-black text-gray-800">
-                  Detail Nilai SOP
-                </h3>
-                <p className=" text-gray-500">
-                  Daftar SOP tindakan dan nilai mahasiswa.
-                </p>
-              </div>
+            <div className="mb-4 flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
+            <div>
+              <h3 className="text-xl font-black text-gray-800">
+                Detail Nilai SOP
+              </h3>
+              <p className=" text-gray-500">
+                Daftar SOP tindakan dan nilai mahasiswa.
+              </p>
+            </div>
+
+            <button
+              onClick={handleCetakExcelPerSiswa}
+              className="rounded-xl bg-gradient-to-r from-green-600 to-emerald-600 px-4 py-3 text-sm font-black text-white shadow-md transition hover:scale-[1.02]"
+            >
+              Cetak Excel
+            </button>
+          </div>
 
               <div className="flex-1 space-y-3 overflow-y-auto pr-1">
                 {testUserList.map((sop, index) => {
@@ -355,6 +1011,7 @@ const Page = () => {
                     <button
                       onClick={() => {
                         setTesDipilih(sop.id);
+                        setSopAktif(sop);
                         setSelectedDetailResult(true);
                       }}
                       key={index}
@@ -370,8 +1027,14 @@ const Page = () => {
                             {sop.sop}
                           </p>
                           <p className=" text-gray-400">
-                            Nilai tindakan SOP
-                          </p>
+                          Dosen : {
+                            testAllUserList.find(
+                              (test) =>
+                                Number(test.sesi) === Number(sop.sesi) &&
+                                test.user_detail?.is_staff === true
+                            )?.user_detail?.nama_lengkap || "Unknown"
+                          }
+                        </p>
                         </div>
                       </div>
 
@@ -479,46 +1142,72 @@ const Page = () => {
                     <div className="text-left p-3">Nilai</div>
                   </div>
       
-                  {items.map((item: any, index: number) => (
-                    <div
-                      key={item.id}
-                      className="flex flex-row justify-between border-b border-gray-100 last:border-b-0 items-center hover:bg-emerald-50/30 transition"
-                    >
-                      <div className="p-3  text-gray-700 leading-6">
-                        <span className="font-black mr-2 text-emerald-700">
-                          {index + 1}.
-                        </span>
-                        {item.soal_sop_detail.soal}
-                      </div>
-      
-                      <div className="flex flex-col justify-center items-center gap-2 p-3 lg:flex-row">
-                        <p className='opacity-50 mr-5'>bobot : {item.soal_sop_detail.bobot}</p>
-                        <div className="flex justify-center">
-                          <div
-                            className={`px-4 h-9 flex justify-center items-center rounded-lg border font-black transition ${
-                              item.nilai === 1
-                                ? "bg-red-500 text-white border-red-500 shadow-md"
-                                : "bg-white text-gray-500 border-gray-200"
-                            }`}
-                          >
-                            no
+                  {items.map((item: any, index: number) => {
+                    const detailSoalBySop = detailSoalData.filter(
+                      (detail) => Number(detail.sop) === Number(item.soal_sop)
+                    );
+
+                    return (
+                      <div
+                        key={item.id}
+                        className="flex flex-col border-b border-gray-100 last:border-b-0 hover:bg-emerald-50/30 transition"
+                      >
+                        <div className="flex flex-row justify-between items-center">
+                          <div className="p-3 text-gray-700 leading-6">
+                            <span className="font-black mr-2 text-emerald-700">
+                              {index + 1}.
+                            </span>
+                            {item.soal_sop_detail.soal}
+                          </div>
+
+                          <div className="flex flex-col justify-center items-center gap-2 p-3 lg:flex-row">
+                            <p className="opacity-50 mr-5">
+                              bobot : {item.soal_sop_detail.bobot}
+                            </p>
+
+                            <div className="flex justify-center">
+                              <div
+                                className={`px-4 h-9 flex justify-center items-center rounded-lg border font-black transition ${
+                                  item.nilai === 1
+                                    ? "bg-red-500 text-white border-red-500 shadow-md"
+                                    : "bg-white text-gray-500 border-gray-200"
+                                }`}
+                              >
+                                no
+                              </div>
+                            </div>
+
+                            <div className="flex justify-center">
+                              <div
+                                className={`h-9 px-4 flex justify-center items-center rounded-lg border font-black transition ${
+                                  item.nilai === item.soal_sop_detail.bobot
+                                    ? "bg-green-500 text-white border-green-500 shadow-md"
+                                    : "bg-white text-gray-500 border-gray-200"
+                                }`}
+                              >
+                                yes
+                              </div>
+                            </div>
                           </div>
                         </div>
-      
-                        <div className="flex justify-center">
-                          <div
-                            className={`h-9 px-4 flex justify-center items-center rounded-lg border font-black transition ${
-                              item.nilai === item.soal_sop_detail.bobot
-                                ? "bg-green-500 text-white border-green-500 shadow-md"
-                                : "bg-white text-gray-500 border-gray-200"
-                            }`}
-                          >
-                            yes
+
+                        {detailSoalBySop.length > 0 && (
+                          <div className="mx-3 mb-3 rounded-lg border border-emerald-100 bg-emerald-50/50 p-3">
+                            <div className="flex flex-col gap-2">
+                              {detailSoalBySop.map((detail) => (
+                                <div
+                                  key={detail.id}
+                                  className="rounded-md bg-white p-3 text-gray-700 shadow-sm border border-gray-100"
+                                >
+                                  {detail.deskripsi_soal}
+                                </div>
+                              ))}
+                            </div>
                           </div>
-                        </div>
+                        )}
                       </div>
-                    </div>
-                  ))}
+                    );
+                  })}
                 </div>
               ))}
             </div> 
