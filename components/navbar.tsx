@@ -48,7 +48,7 @@ const Navbar = () => {
   
             <div className="min-w-0">
               <h1 className="truncate font-black text-gray-800">
-                OSCE Nursing
+                SIPOSCE App
               </h1>
               <p className="hidden text-xs text-gray-500 sm:block">
                 Admin Panel
