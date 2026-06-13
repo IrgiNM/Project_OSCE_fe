@@ -51,7 +51,7 @@ const Page = () => {
         0
       );
     
-      const totalMaksimal = JenisSOPList.length * 100;
+      const totalMaksimal = 7 * 100;
     
       if (totalMaksimal === 0) return 0;
     
@@ -804,7 +804,7 @@ const Page = () => {
 
               <button
                 onClick={() => setSelectedPeringkat(true)}
-                className="rounded-xl bg-gradient-to-r from-emerald-600 to-cyan-600 px-5 py-3 font-black text-white shadow-md transition hover:scale-[1.02] flex flex-row"
+                className="rounded-xl bg-gradient-to-r from-emerald-600 to-cyan-600 px-5 py-3 font-black text-white shadow-md transition hover:scale-[1.02] flex flex-row justify-center"
               >
                 <div className="w-[20px] h-[20px] pb-1 flex justify-center items-center">
                   <Image src="/crown.png" alt="Logo" width={12} height={12} />  
@@ -813,7 +813,7 @@ const Page = () => {
               </button>
               <button
                 onClick={handleCetakExcel}
-                className="rounded-xl bg-gradient-to-r from-green-600 to-emerald-600 px-5 py-3 font-black text-white shadow-md transition hover:scale-[1.02] flex flex-row items-center justify-center w-[200px]"
+                className="rounded-xl bg-gradient-to-r from-green-600 to-emerald-600 px-5 py-3 font-black text-white shadow-md transition hover:scale-[1.02] flex flex-row items-center justify-center w-full active:from-green-100 active:to-green-100 active:text-green-700"
               >
                 <p>Cetak Excel</p>
               </button>
@@ -930,18 +930,18 @@ const Page = () => {
               <Image src="/close.png" alt="Logo" width={15} height={15} />
             </button>
             {/* KIRI DETAIL SISWA */}
-            <div className="w-full border-b border-gray-100 bg-gradient-to-br from-emerald-600 to-cyan-600 p-5 text-white md:w-[38%] md:border-b-0 md:border-r rounded-s-xl">
-              <div className="mb-5 flex items-center justify-between">
-                <div className="flex h-14 w-14 items-center justify-center rounded-xl bg-white/20 text-2xl font-black backdrop-blur border-[.5px] border-white">
+            <div className="w-full border-b border-gray-100 bg-gradient-to-br from-emerald-600 to-cyan-600 p-5 text-white md:w-[38%] md:border-b-0 md:border-r rounded-t-xl md:rounded-s-xl lg:rounded-s-xl md:rounded-e-[0px] lg:rounded-e-[0px]">
+              <div className="mb-5 flex items-center justify-end md:justify-between lg:justify-between">
+                <div className="md:flex lg:flex h-14 w-14 items-center justify-center rounded-xl bg-white/20 text-2xl font-black backdrop-blur border-[.5px] border-white hidden">
                   {mahasiswaAktif?.nama_lengkap?.charAt(0)}
                 </div>
 
-                {/* <button
+                <button
                   onClick={() => setSelectedMahasiswa(false)}
-                  className="rounded-lg bg-white/20 px-3 py-2  font-bold text-white hover:bg-white/30"
+                  className="rounded-lg bg-white/20 px-3 py-2  font-bold text-white hover:bg-white/30 md:hidden lg:hidden"
                 >
                   Tutup
-                </button> */}
+                </button>
               </div>
 
               <h2 className="text-2xl font-black">{mahasiswaAktif?.nama_lengkap}</h2>
@@ -951,7 +951,7 @@ const Page = () => {
               </p>
 
               <div className="mt-6 space-y-3">
-                <div className="rounded-xl bg-white/15 p-4 backdrop-blur">
+                <div className="rounded-xl bg-white/15 p-4 backdrop-blur hidden md:flex lg:flex flex-col">
                   <p className=" text-emerald-50">Kelas</p>
                   <p className="text-xl font-black">
                     {mahasiswaAktif?.kelas}
@@ -997,7 +997,7 @@ const Page = () => {
             </div>
 
             {/* KANAN DETAIL SOP */}
-            <div className="flex max-h-[55vh] flex-1 flex-col bg-white p-5 md:max-h-[90vh] rounded-e-xl">
+            <div className="flex max-h-[55vh] flex-1 flex-col bg-white p-5 md:max-h-[90vh] rounded-b-xl md:rounded-e-xl lg:rounded-e-xl h-[50px] lg:h-[600px] bg-blue-500">
             <div className="mb-4 flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
             <div>
               <h3 className="text-xl font-black text-gray-800">
@@ -1010,7 +1010,7 @@ const Page = () => {
 
             <button
               onClick={handleCetakExcelPerSiswa}
-              className="rounded-xl bg-gradient-to-r from-green-600 to-emerald-600 px-4 py-3 text-sm font-black text-white shadow-md transition hover:scale-[1.02]"
+              className="rounded-xl bg-gradient-to-r from-green-600 to-emerald-600 px-4 py-3 font-black text-white shadow-md transition hover:scale-[1.02] active:from-green-100 active:to-green-100 active:text-green-700"
             >
               Cetak Excel
             </button>
@@ -1239,7 +1239,7 @@ const Page = () => {
           <div className="fixed left-1/2 top-1/2 z-50 flex max-h-[90vh] w-[92%] max-w-4xl -translate-x-1/2 -translate-y-1/2 flex-col rounded-xl bg-white shadow-2xl">
             <button
               onClick={() => setSelectedPeringkat(false)}
-              className="absolute top-1 -right-[60px] z-50 flex h-[45px] w-[45px] items-center justify-center rounded-xl border-2 border-white transition-all duration-100 hover:bg-[#cc005f]"
+              className="absolute lg:top-1 lg:-right-[60px] md:top-1 md:-right-[60px] right-3 top-3 z-50 flex h-[45px] w-[45px] items-center justify-center rounded-xl border-2 border-white transition-all duration-100 hover:bg-[#cc005f]"
             >
               <Image src="/close.png" alt="Close" width={15} height={15} />
             </button>
@@ -1263,7 +1263,7 @@ const Page = () => {
 
             {/* ISI */}
             <div className="flex-1 overflow-y-auto p-5">
-              <div className="absolute right-0 left-0 top-[114px] h-[30px] bg-white" />
+              <div className="absolute right-0 left-0 lg:top-[114px] md:top-[114px] top-[169px] h-[30px] bg-white" />
               <div className="mb-4 grid grid-cols-12 absolute right-9 left-5 rounded-t-lg bg-gradient-to-r from-emerald-600 via-teal-600 to-cyan-600 px-4 py-3 font-bold text-white">
                 <div className="col-span-2 text-center sm:col-span-1">Rank</div>
                 <div className="col-span-5 sm:col-span-5">Mahasiswa</div>
