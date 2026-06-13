@@ -86,19 +86,21 @@ const Page = () => {
             : [];
     
         // 3. create detail test secara berurutan
+        const detailRequests = [];
+
         for (const testId of testIds) {
           for (const sopId of sopIds) {
-            const payload = {
-              test: testId,
-              soal_sop: sopId,
-              nilai: 0,
-            };
-
-            console.log("Payload dikirim:", payload);
-
-            await createDetailTest(payload);
+            detailRequests.push(
+              createDetailTest({
+                test: testId,
+                soal_sop: sopId,
+                nilai: 0,
+              })
+            );
           }
         }
+
+        await Promise.all(detailRequests);
     
         // console.error("Detail SOP created successfully");
     
