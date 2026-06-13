@@ -50,6 +50,18 @@ const Page = () => {
       }
     }, [])
 
+    useEffect(() => {
+      const sopSebelumnya = localStorage.getItem("sop");
+    
+      if (sopSebelumnya) {
+        const parsedSOP: string[] = JSON.parse(sopSebelumnya);
+    
+        if (Array.isArray(parsedSOP) && parsedSOP.length > 0) {
+          setSOPDipilih(parsedSOP);
+        }
+      }
+    }, []);
+
     const handleCreateDetailSOP = async () => {
       try {
         const SOPToken: string[] = JSON.parse(
@@ -206,6 +218,18 @@ const Page = () => {
         },
       ];
 
+      const handlePilihSOP = (item: string) => {
+        let newSOP: string[] = [];
+      
+        if (SOPDipilih.includes(item)) {
+          newSOP = [];
+        } else {
+          newSOP = [item];
+        }
+      
+        setSOPDipilih(newSOP);
+        localStorage.setItem("sop", JSON.stringify(newSOP));
+      };
 
     return (
         <div className="min-h-screen w-full bg-gradient-to-br from-emerald-50 via-cyan-50 to-blue-100 px-4 py-6">
@@ -593,13 +617,7 @@ const Page = () => {
       
                     return (
                       <button
-                        onClick={() => {
-                          if (isSelected) {
-                            setSOPDipilih([]);
-                          } else {
-                            setSOPDipilih([item]);
-                          }
-                        }}
+                        onClick={() => handlePilihSOP(item)}
                         key={index}
                         className={`
                           flex w-full items-center justify-between rounded-xl border px-4 py-4 transition-all
@@ -637,12 +655,9 @@ const Page = () => {
                         </div>
       
                         <button
-                          onClick={() => {
-                            if (isSelected) {
-                              setSOPDipilih([]);
-                            } else {
-                              setSOPDipilih([item]);
-                            }
+                          onClick={(e) => {
+                            e.stopPropagation();
+                            handlePilihSOP(item);
                           }}
                           className={`
                             rounded-lg px-4 py-2  font-bold text-white transition
