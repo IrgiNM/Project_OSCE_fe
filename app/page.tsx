@@ -73,7 +73,7 @@ export default function Home() {
           <div className="relative hidden min-h-[560px] flex-col justify-between bg-gradient-to-br from-emerald-600 via-teal-600 to-cyan-600 p-8 text-white md:flex">
             <div>
               <div className="mb-6 inline-flex items-center gap-3 rounded-xl bg-white/20 px-5 py-3 text-sm font-semibold backdrop-blur border-[.5px] border-white">
-                <div className="flex h-10 w-10 items-center justify-center rounded-lg bg-white p-1 shadow-md">
+                {/* <div className="flex h-10 w-10 items-center justify-center rounded-lg bg-white p-1 shadow-md">
                   <Image
                     src="/polindra-logo.png"
                     alt="Logo Kampus"
@@ -81,13 +81,23 @@ export default function Home() {
                     height={32}
                     className="object-contain"
                   />
-                </div>
-                <div className="h-8 w-[1px] bg-white/30" />
+                </div> */}
+                {/* <div className="h-8 w-[1px] bg-white/30" /> */}
                 <div className="flex items-center gap-2">
                   <Image src="/doctor.png" alt="Logo OSCE" width={18} height={18} />
                   <span>SIPOSCE</span>
                 </div>
               </div>
+
+              <div className="flex w-30 h-30 items-center justify-center rounded-lg p-1">
+                  <Image
+                    src="/polindra-logo.png"
+                    alt="Logo Kampus"
+                    width={82}
+                    height={82}
+                    className="object-contain"
+                  />
+                </div>
 
               <div className="max-w-xl">
                 <p className="mb-3 inline-flex rounded-full border border-white/20 bg-white/15 px-4 py-2 text-xs font-bold text-emerald-50 backdrop-blur">
@@ -107,12 +117,14 @@ export default function Home() {
                   penguji, SOP tindakan keperawatan, hasil penilaian, dan rekap
                   nilai OSCE secara terstruktur.
                 </p>
+
+                
               </div>
             </div>
 
             <div className="grid grid-cols-3 gap-3">
-              <div className="rounded-xl bg-white/15 p-4 text-center backdrop-blur">
-                <div className="mx-auto mb-2 flex h-10 w-10 items-center justify-center rounded-xl bg-white/20">
+              <div className="rounded-xl bg-white/15 flex flex-row items-center p-4 backdrop-blur">
+                <div className="mr-2 flex h-10 w-10 items-center justify-center rounded-xl bg-white/20">
                   <Image src="/user.png" alt="Mahasiswa" width={18} height={18} />
                 </div>
                 <p className="text-xs font-semibold text-emerald-50">
@@ -120,8 +132,8 @@ export default function Home() {
                 </p>
               </div>
 
-              <div className="rounded-xl bg-white/15 p-4 text-center backdrop-blur">
-                <div className="mx-auto mb-2 flex h-10 w-10 items-center justify-center rounded-xl bg-white/20">
+              <div className="rounded-xl bg-white/15 flex flex-row items-center p-4 backdrop-blur">
+                <div className="mr-2 flex h-10 w-10 items-center justify-center rounded-xl bg-white/20">
                   <Image src="/dosen.png" alt="Dosen" width={18} height={18} />
                 </div>
                 <p className="text-xs font-semibold text-emerald-50">
@@ -129,8 +141,8 @@ export default function Home() {
                 </p>
               </div>
 
-              <div className="rounded-xl bg-white/15 p-4 text-center backdrop-blur">
-                <div className="mx-auto mb-2 flex h-10 w-10 items-center justify-center rounded-xl bg-white/20">
+              <div className="rounded-xl bg-white/15 flex flex-row items-center p-4 backdrop-blur">
+                <div className="mr-2 flex h-10 w-10 items-center justify-center rounded-xl bg-white/20">
                   <Image src="/doctor.png" alt="SOP" width={18} height={18} />
                 </div>
                 <p className="text-xs font-semibold text-emerald-50">
