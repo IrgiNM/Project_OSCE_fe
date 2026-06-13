@@ -432,7 +432,7 @@ const Page = () => {
                             {isSelected ? "✓" : "M"}
                           </div>
       
-                          <div>
+                          <div className='flex flex-col items-start'>
                             <p className="font-bold text-gray-800">
                               {item.nama_lengkap}
                             </p>
@@ -628,7 +628,7 @@ const Page = () => {
                             )}
                           </div>
       
-                          <div>
+                          <div className='flex flex-col items-start'>
                             <p className="font-bold text-gray-800">{item}</p>
                             <p className="text-xs text-gray-500">
                               Standar operasional tindakan keperawatan
