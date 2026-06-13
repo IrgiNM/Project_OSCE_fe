@@ -403,11 +403,9 @@ const Page = () => {
                       <button
                         onClick={() => {
                           if (isSelected) {
-                            setSiswaDipilih(
-                              siswaDipilih.filter((id) => id !== item.id)
-                            );
+                            setSiswaDipilih([]);
                           } else {
-                            setSiswaDipilih([...siswaDipilih, item.id]);
+                            setSiswaDipilih([item.id]);
                           }
                         }}
                         key={index}
@@ -447,11 +445,9 @@ const Page = () => {
                         <button
                           onClick={() => {
                             if (isSelected) {
-                              setSiswaDipilih(
-                                siswaDipilih.filter((id) => id !== item.id)
-                              );
+                              setSiswaDipilih([]);
                             } else {
-                              setSiswaDipilih([...siswaDipilih, item.id]);
+                              setSiswaDipilih([item.id]);
                             }
                           }}
                           className={`
@@ -599,11 +595,9 @@ const Page = () => {
                       <button
                         onClick={() => {
                           if (isSelected) {
-                            setSOPDipilih(
-                              SOPDipilih.filter((nama) => nama !== item)
-                            );
+                            setSOPDipilih([]);
                           } else {
-                            setSOPDipilih([...SOPDipilih, item]);
+                            setSOPDipilih([item]);
                           }
                         }}
                         key={index}
@@ -645,11 +639,9 @@ const Page = () => {
                         <button
                           onClick={() => {
                             if (isSelected) {
-                              setSOPDipilih(
-                                SOPDipilih.filter((nama) => nama !== item)
-                              );
+                              setSOPDipilih([]);
                             } else {
-                              setSOPDipilih([...SOPDipilih, item]);
+                              setSOPDipilih([item]);
                             }
                           }}
                           className={`
