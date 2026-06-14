@@ -60,6 +60,7 @@ export const getTestById = (data: number) => api.get(`api/test/list/${data}/`);
 export const getTestByUser = (id: number) => api.get(`api/test/list/user/${id}/`);
 export const getTestLast = () => api.get(`api/test/list/last/`);
 export const updateTest = (id: number, data: updateTestType) => api.patch(`api/test/update/${id}/`, data);
+export const deleteTest = (id: number) => api.delete(`api/test/delete/${id}/`);
 
 // DETAIL TEST
 export const createDetailTest = (data: createTestType) => api.post("api/detail-test/create/", data);   

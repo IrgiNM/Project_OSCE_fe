@@ -4,7 +4,7 @@ import Navbar from "@/components/navbar";
 import dataJenisSOP from "@/lib/data/dataJenisSOP";
 import dataSiswa from "@/lib/data/dataSiswa";
 import dataTest from "@/lib/data/dataTest";
-import { getDetailSop, getDetailTestById } from "@/lib/function/api";
+import { deleteTest, getDetailSop, getDetailTestById } from "@/lib/function/api";
 import { detailSoalType } from "@/type/detailSoalType";
 import { detailTestType } from "@/type/detailTestType";
 import { UserType } from "@/type/userType";
@@ -19,6 +19,8 @@ const Page = () => {
   const [pisckSiswa, setPickSiswa] = useState<number>(0);
   const { testUserList, testAllUserList } = dataTest(pisckSiswa);
 
+  const [isLoading, setIsLoading] = useState(false);
+
   const [search, setSearch] = useState("");
   const [selectedMahasiswa, setSelectedMahasiswa] = useState(false);
   const [selectedDetailResult, setSelectedDetailResult] = useState(false);
@@ -31,6 +33,9 @@ const Page = () => {
   const [detailSoalData, setDetailSoalData] = useState<detailSoalType[]>([]);
   const [mahasiswaAktif, setMahasiswaAktif] = useState<UserType | null>(null);
   const [sopAktif, setSopAktif] = useState<any>(null);
+
+  const [selectedDeleteTest, setSelectedDeleteTest] = useState(false);
+  const [testDeleteAktif, setTestDeleteAktif] = useState<any>(null);
 
     const groupedData = detailTestData.reduce((acc: any, item) => {
         const category = item.soal_sop_detail.category || "Lainnya";
@@ -753,6 +758,26 @@ const Page = () => {
     }
   };
 
+  const handleDeleteTest = async (id: number) => {
+    setIsLoading(true);
+  
+    try {
+      const res = await deleteTest(id);
+  
+      if (res.status === 204) {
+        alert("Data test berhasil dihapus");
+  
+        setSelectedDeleteTest(false);
+        setTestDeleteAktif(null);
+        setSelectedDetailResult(false);
+      }
+    } catch (error) {
+      alert("Gagal menghapus data test");
+    } finally {
+      setIsLoading(false);
+    }
+  };
+
   return (
     <div className="min-h-screen w-full bg-gradient-to-br from-emerald-50 via-cyan-50 to-blue-100">
       {/* NAVBAR */}
@@ -1036,7 +1061,7 @@ const Page = () => {
                         </div>
 
                         <div className="min-w-0 flex flex-col items-start">
-                          <p className=" text-black font-bold">
+                          <p className=" text-black text-left font-bold">
                             {sop.sop}
                           </p>
                           <p className=" text-gray-400">
@@ -1051,21 +1076,35 @@ const Page = () => {
                         </div>
                       </div>
 
-                      <div className="text-center">
-                        <p
-                          className={`text-xl font-black ${
-                            isNilaiLulus ? "text-emerald-700" : "text-red-600"
-                          }`}
+                      <div className="flex items-center gap-3">
+                        <div className="text-center">
+                          <p
+                            className={`text-xl font-black ${
+                              isNilaiLulus ? "text-emerald-700" : "text-red-600"
+                            }`}
+                          >
+                            {sop.total_nilai}
+                          </p>
+                          <p
+                            className={`text-xs font-bold ${
+                              isNilaiLulus ? "text-emerald-600" : "text-red-600"
+                            }`}
+                          >
+                            {isNilaiLulus ? "Lulus" : "Tidak"}
+                          </p>
+                        </div>
+
+                        <button
+                          type="button"
+                          onClick={(e) => {
+                            e.stopPropagation();
+                            setTestDeleteAktif(sop);
+                            setSelectedDeleteTest(true);
+                          }}
+                          className="rounded-lg bg-red-500 p-3 text-xs font-black text-white shadow-md transition hover:bg-red-700 active:scale-95"
                         >
-                          {sop.total_nilai}
-                        </p>
-                        <p
-                          className={`text-xs font-bold ${
-                            isNilaiLulus ? "text-emerald-600" : "text-red-600"
-                          }`}
-                        >
-                          {isNilaiLulus ? "Lulus" : "Tidak"}
-                        </p>
+                          <Image src="/close.png" alt="Logo" width={13} height={13} />
+                        </button>
                       </div>
                     </button>
                   );
@@ -1352,6 +1391,79 @@ const Page = () => {
                   </div>
                 )}
               </div>
+            </div>
+          </div>
+        </>
+      )}
+
+
+      {/* POPUP HAPUS TEST SOP */}
+      {selectedDeleteTest && (
+        <>
+          <div
+            onClick={() => {
+              setSelectedDeleteTest(false);
+              setTestDeleteAktif(null);
+            }}
+            className="fixed inset-0 z-[80] bg-slate-950/70 backdrop-blur-sm"
+          />
+
+          <div className="fixed left-1/2 top-1/2 z-[90] w-[90%] max-w-md -translate-x-1/2 -translate-y-1/2 rounded-xl bg-white p-6 shadow-2xl">
+            <div className="mb-4 flex items-center gap-3">
+              <div className="flex h-12 w-12 items-center justify-center rounded-xl bg-red-100 text-xl font-black text-red-600">
+                !
+              </div>
+
+              <div>
+                <h2 className="text-xl font-black text-gray-800">
+                  Hapus Test SOP?
+                </h2>
+                <p className="text-sm text-gray-500">
+                  Data nilai test SOP ini akan dihapus.
+                </p>
+              </div>
+            </div>
+
+            <div className="mb-5 rounded-xl border border-red-100 bg-red-50 p-4">
+              <p className="text-sm font-semibold text-gray-500">Nama SOP</p>
+              <p className="font-black text-gray-800">
+                {testDeleteAktif?.sop || "-"}
+              </p>
+
+              <p className="mt-3 text-sm font-semibold text-gray-500">Nilai</p>
+              <p className="font-black text-red-600">
+                {testDeleteAktif?.total_nilai ?? 0}
+              </p>
+            </div>
+
+            <p className="mb-5 text-sm text-gray-500">
+              Apakah kamu yakin ingin menghapus test SOP ini?
+            </p>
+
+            <div className="flex gap-3">
+              <button
+                type="button"
+                onClick={() => {
+                  setSelectedDeleteTest(false);
+                  setTestDeleteAktif(null);
+                }}
+                className="w-full rounded-xl border border-gray-300 bg-white px-4 py-3 font-black text-gray-700 transition hover:bg-gray-100"
+              >
+                Tidak
+              </button>
+
+              <button
+                type="button"
+                disabled={isLoading}
+                onClick={() => {
+                  if (testDeleteAktif?.id) {
+                    handleDeleteTest(testDeleteAktif.id);
+                  }
+                }}
+                className="w-full rounded-xl bg-red-600 px-4 py-3 font-black text-white transition hover:bg-red-700 disabled:cursor-not-allowed disabled:opacity-60"
+              >
+                {isLoading ? "Menghapus..." : "Ya, Hapus"}
+              </button>
             </div>
           </div>
         </>
