@@ -100,7 +100,7 @@ const Page = () => {
 
             <div className="rounded-lg border border-white/40 bg-white/15 px-7 py-4 text-center backdrop-blur">
             <p className="text-emerald-50">Total SOP</p>
-            <p className="text-3xl font-black">{dataSOP.length}</p>
+            <p className="text-3xl font-black">{testUserList.length}</p>
             </div>
         </div>
         </div>
