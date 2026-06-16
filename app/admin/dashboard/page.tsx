@@ -1351,7 +1351,7 @@ const Page = () => {
                           {item.nama_lengkap}
                         </p>
                         <p className="text-sm text-gray-500">
-                          SOP selesai: {item.jumlahSOP}/{JenisSOPList.length}
+                          SOP selesai: {item.jumlahSOP}/7
                         </p>
                       </div>
 
