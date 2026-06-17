@@ -171,6 +171,9 @@ const Page = () => {
             return acc + item.nilai;
           }, 0);
       
+          // const nilaiPersen = Number(
+          //   ((totalNilai / (detailTestData.length)) * 100).toFixed(0)
+          // );
           const nilaiPersen = Number(
             ((totalNilai / (detailTestData.reduce((total, item) => {
               return total + item.soal_sop_detail.bobot;
@@ -259,6 +262,15 @@ const Page = () => {
               <div className="rounded-lg bg-gradient-to-r from-emerald-600 to-cyan-600 px-5 py-3 text-center text-white shadow-md">
                 <p className=" text-emerald-50">Nilai</p>
                 <p className="text-2xl font-black">
+                    {/* {detailTestData.length > 0
+                    ? (
+                        (
+                          detailTestData.reduce((acc, item) => acc + item.nilai, 0)
+                          /
+                          (detailTestData.length)
+                        ) * 100).toFixed(0)
+                    : 0
+                    } */}
                     {detailTestData.length > 0
                     ? (
                         (
@@ -313,45 +325,59 @@ const Page = () => {
                         </div>
 
                         <div className="flex flex-col justify-center items-center gap-2 p-3 lg:flex-row">
-                          <p className="opacity-50 mr-5">
+                          {/* <p className="opacity-50 mr-5">
                             bobot : {item.soal_sop_detail.bobot}
-                          </p>
+                          </p> */}
 
-                          <div className="flex justify-center">
-                            <button
-                              onClick={() => {
-                                handleUpdate(item.test, item.soal_sop, 1);
-                                handleUpdate2(item.id, 1);
-                              }}
-                              className={`px-4 h-9 rounded-lg border font-black transition ${
-                                item.nilai === 1
-                                  ? "bg-red-500 text-white border-red-500 shadow-md"
-                                  : "bg-white text-gray-500 border-gray-200 hover:bg-red-50 hover:border-red-300 hover:text-red-600"
-                              }`}
-                            >
-                              no
-                            </button>
-                          </div>
+                          {item.soal_sop_detail.bobot > 0 && (
+                            <>
+                              <div className="flex justify-center">
+                                <button
+                                  onClick={() => {
+                                    handleUpdate(item.test, item.soal_sop, 0);
+                                    handleUpdate2(item.id, 0);
+                                  }}
+                                  className={`px-4 h-9 rounded-lg border font-black transition ${
+                                    item.nilai === 0
+                                      ? "bg-red-500 text-white border-red-500 shadow-md"
+                                      : "bg-white text-gray-500 border-gray-200 hover:bg-red-50 hover:border-red-300 hover:text-red-600"
+                                  }`}
+                                >
+                                  no
+                                </button>
+                              </div>
 
-                          <div className="flex justify-center">
-                            <button
-                              onClick={() => {
-                                handleUpdate(
-                                  item.test,
-                                  item.soal_sop,
-                                  item.soal_sop_detail.bobot
-                                );
-                                handleUpdate2(item.id, item.soal_sop_detail.bobot);
-                              }}
-                              className={`h-9 px-4 rounded-lg border font-black transition ${
-                                item.nilai === item.soal_sop_detail.bobot
-                                  ? "bg-green-500 text-white border-green-500 shadow-md"
-                                  : "bg-white text-gray-500 border-gray-200 hover:bg-green-50 hover:border-green-300 hover:text-green-600"
-                              }`}
-                            >
-                              yes
-                            </button>
-                          </div>
+                              <div className="flex justify-center">
+                                <button
+                                  // onClick={() => {
+                                  //   handleUpdate(
+                                  //     item.test,
+                                  //     item.soal_sop,
+                                  //     1
+                                  //   );
+                                  //   handleUpdate2(item.id, 1);
+                                  // }}
+                                  onClick={() => {
+                                    handleUpdate(
+                                      item.test,
+                                      item.soal_sop,
+                                      item.soal_sop_detail.bobot
+                                    );
+                                    handleUpdate2(item.id, item.soal_sop_detail.bobot);
+                                  }}
+                                  className={`h-9 px-4 rounded-lg border font-black transition ${
+                                    item.nilai === 1
+                                    // item.nilai === item.soal_sop_detail.bobot
+                                      ? "bg-green-500 text-white border-green-500 shadow-md"
+                                      : "bg-white text-gray-500 border-gray-200 hover:bg-green-50 hover:border-green-300 hover:text-green-600"
+                                  }`}
+                                >
+                                  yes
+                                </button>
+                              </div>
+                            </>
+                          )} 
+
                         </div>
                       </div>
 
@@ -456,6 +482,15 @@ const Page = () => {
                   <div className="rounded-lg mb-3 bg-green-100  px-5 py-3 text-center">
                       <p className="text-xs font-semibold text-emerald-50 text-green-700">Nilai</p>
                       <p className="text-2xl font-black text-green-700">
+                        {/* {detailTestData.length > 0
+                        ? (
+                            (
+                              detailTestData.reduce((acc, item) => acc + item.nilai, 0)
+                              /
+                              (detailTestData.length)
+                            ) * 100).toFixed(0)
+                        : 0
+                        } */}
                         {detailTestData.length > 0
                         ? (
                             (
