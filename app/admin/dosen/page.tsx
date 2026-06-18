@@ -3,9 +3,10 @@
 import Navbar from "@/components/navbar";
 import dataDosen from "@/lib/data/dataDosen";
 import dataSiswa from "@/lib/data/dataSiswa";
+import { getUserMe } from "@/lib/function/api";
 import Image from "next/image";
 import { useRouter } from "next/navigation";
-import React, { useState } from "react";
+import React, { useEffect, useState } from "react";
 
 type DetailSOP = {
   nama_sop: string;
@@ -97,6 +98,18 @@ const Page = () => {
       kelas.toLowerCase().includes(keyword)
     );
   });
+
+  useEffect(()=>{
+    const fetch = async () => {
+      const res = await getUserMe();
+      if(res.status === 200){
+        if(res.data.is_staff === false){
+          router.push('/user/')
+        }
+      }
+    }
+    fetch();
+  }, [])
 
   return (
     <div className="min-h-screen w-full bg-gradient-to-br from-emerald-50 via-cyan-50 to-blue-100">

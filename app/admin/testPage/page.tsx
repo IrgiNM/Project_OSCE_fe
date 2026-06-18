@@ -1,7 +1,7 @@
 "use client"
 import dataSiswa from '@/lib/data/dataSiswa';
 import dataTest from '@/lib/data/dataTest';
-import { getDetailSop, getDetailTestById, updateDetailTest, updateTest } from '@/lib/function/api';
+import { getDetailSop, getDetailTestById, getUserMe, updateDetailTest, updateTest } from '@/lib/function/api';
 import { getInitials } from '@/lib/function/initial';
 import { getMahasiswaPilihan } from '@/lib/function/token'
 import { detailSoalType } from '@/type/detailSoalType';
@@ -223,7 +223,17 @@ const Page = () => {
         );
     };
 
-
+    useEffect(()=>{
+      const fetch = async () => {
+        const res = await getUserMe();
+        if(res.status === 200){
+          if(res.data.is_staff === false){
+            router.push('/user/')
+          }
+        }
+      }
+      fetch();
+    }, [])
 
     return (
         <div className="min-h-screen w-full flex flex-col justify-center items-center bg-gradient-to-br from-emerald-50 via-cyan-50 to-blue-100 px-4 py-6">

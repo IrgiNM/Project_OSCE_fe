@@ -3,7 +3,7 @@ import Navbar from '@/components/navbar';
 import dataDosen from '@/lib/data/dataDosen';
 import dataSiswa from '@/lib/data/dataSiswa';
 import dataSOP from '@/lib/data/dataSOP';
-import { createDetailTest, createSesiUjian, getListSopByName, getTestById, uploadTest } from '@/lib/function/api';
+import { createDetailTest, createSesiUjian, getListSopByName, getTestById, getUserMe, uploadTest } from '@/lib/function/api';
 import { getToken, logoutUser, setDosenPilihan, setMahasiswaPilihan, setSesiPilihan, setSOPPilihan } from '@/lib/function/token';
 import Image from 'next/image';
 import { useRouter } from 'next/navigation';
@@ -230,6 +230,18 @@ const Page = () => {
         setSOPDipilih(newSOP);
         localStorage.setItem("sop", JSON.stringify(newSOP));
       };
+
+    useEffect(()=>{
+      const fetch = async () => {
+        const res = await getUserMe();
+        if(res.status === 200){
+          if(res.data.is_staff === false){
+            router.push('/user/')
+          }
+        }
+      }
+      fetch();
+    }, [])
 
     return (
         <div className="min-h-screen w-full bg-gradient-to-br from-emerald-50 via-cyan-50 to-blue-100 px-4 py-6">

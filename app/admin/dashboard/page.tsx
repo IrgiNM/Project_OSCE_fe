@@ -4,15 +4,17 @@ import Navbar from "@/components/navbar";
 import dataJenisSOP from "@/lib/data/dataJenisSOP";
 import dataSiswa from "@/lib/data/dataSiswa";
 import dataTest from "@/lib/data/dataTest";
-import { deleteTest, getDetailSop, getDetailTestById } from "@/lib/function/api";
+import { deleteTest, getDetailSop, getDetailTestById, getUserMe } from "@/lib/function/api";
 import { detailSoalType } from "@/type/detailSoalType";
 import { detailTestType } from "@/type/detailTestType";
 import { UserType } from "@/type/userType";
 import Image from "next/image";
+import { useRouter } from "next/navigation";
 import { useEffect, useState } from "react";
 import * as XLSX from "xlsx-js-style";
 
 const Page = () => {
+  const router = useRouter();
   const { siswaList } = dataSiswa();
   const { JenisSOPList } = dataJenisSOP();
 
@@ -146,6 +148,18 @@ const Page = () => {
             ? detailTestData[0].soal_sop_detail.nama_sop
             : "")
     }, [detailTestData])
+
+    useEffect(()=>{
+      const fetch = async () => {
+        const res = await getUserMe();
+        if(res.status === 200){
+          if(res.data.is_staff === false){
+            router.push('/user')
+          }
+        }
+      }
+      fetch();
+    }, [])
   
 
   const filteredMahasiswa = siswaList.filter((item) => {
