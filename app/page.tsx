@@ -12,6 +12,7 @@ export default function Home() {
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
   const [isLoading, setIsLoading] = useState(false);
+  const [errorMessage, setErrorMessage] = useState("");
 
   useEffect(() => {
     const token = getToken();
@@ -22,8 +23,10 @@ export default function Home() {
   }, [router]);
 
   const handleLogin = async () => {
+    setErrorMessage("");
+
     if (!email || !password) {
-      // alert("Email dan password wajib diisi!");
+      setErrorMessage("Email dan password wajib diisi.");
       return;
     }
 
@@ -40,25 +43,26 @@ export default function Home() {
 
         setEmail("");
         setPassword("");
+        setErrorMessage("");
 
         setToken(res.data.token);
-
-        // // alert("Login berhasil!");
 
         if (res.data.user.is_staff === true) {
           router.push("/admin");
         } else {
           router.push("/user");
         }
+      } else {
+        setErrorMessage("Login gagal. Silakan coba lagi.");
       }
     } catch (error: any) {
       console.log(error.response?.data);
 
-      // // alert(
-      //   error.response?.data?.message ||
-      //     error.response?.data?.detail ||
-      //     "Terjadi kesalahan"
-      // );
+      setErrorMessage(
+        error.response?.data?.message ||
+          error.response?.data?.detail ||
+          "Email atau password salah."
+      );
     } finally {
       setIsLoading(false);
     }
@@ -68,36 +72,30 @@ export default function Home() {
     <div className="min-h-screen w-full bg-gradient-to-br from-emerald-50 via-cyan-50 to-blue-100 px-4 py-6">
       <div className="mx-auto flex min-h-[calc(100vh-48px)] w-full max-w-6xl items-center justify-center">
         <div className="grid w-full overflow-hidden rounded-2xl bg-white shadow-2xl md:grid-cols-2">
-          
           {/* LEFT SIDE */}
           <div className="relative hidden min-h-[560px] flex-col justify-between bg-gradient-to-br from-emerald-600 via-teal-600 to-cyan-600 p-8 text-white md:flex">
             <div>
               <div className="mb-6 inline-flex items-center gap-3 rounded-xl bg-white/20 px-5 py-3 text-sm font-semibold backdrop-blur border-[.5px] border-white">
-                {/* <div className="flex h-10 w-10 items-center justify-center rounded-lg bg-white p-1 shadow-md">
-                  <Image
-                    src="/polindra-logo.png"
-                    alt="Logo Kampus"
-                    width={32}
-                    height={32}
-                    className="object-contain"
-                  />
-                </div> */}
-                {/* <div className="h-8 w-[1px] bg-white/30" /> */}
                 <div className="flex items-center gap-2">
-                  <Image src="/doctor.png" alt="Logo OSCE" width={18} height={18} />
+                  <Image
+                    src="/doctor.png"
+                    alt="Logo OSCE"
+                    width={18}
+                    height={18}
+                  />
                   <span>SIPOSCE</span>
                 </div>
               </div>
 
               <div className="flex w-30 h-30 items-center justify-center rounded-lg p-1">
-                  <Image
-                    src="/polindra-logo.png"
-                    alt="Logo Kampus"
-                    width={82}
-                    height={82}
-                    className="object-contain"
-                  />
-                </div>
+                <Image
+                  src="/polindra-logo.png"
+                  alt="Logo Kampus"
+                  width={82}
+                  height={82}
+                  className="object-contain"
+                />
+              </div>
 
               <div className="max-w-xl">
                 <p className="mb-3 inline-flex rounded-full border border-white/20 bg-white/15 px-4 py-2 text-xs font-bold text-emerald-50 backdrop-blur">
@@ -117,15 +115,18 @@ export default function Home() {
                   penguji, SOP tindakan keperawatan, hasil penilaian, dan rekap
                   nilai OSCE secara terstruktur.
                 </p>
-
-                
               </div>
             </div>
 
             <div className="grid grid-cols-3 gap-3">
               <div className="rounded-xl bg-white/15 flex flex-row items-center p-4 backdrop-blur">
                 <div className="mr-2 flex h-10 w-10 items-center justify-center rounded-xl bg-white/20">
-                  <Image src="/user.png" alt="Mahasiswa" width={18} height={18} />
+                  <Image
+                    src="/user.png"
+                    alt="Mahasiswa"
+                    width={18}
+                    height={18}
+                  />
                 </div>
                 <p className="text-xs font-semibold text-emerald-50">
                   Mahasiswa
@@ -136,18 +137,14 @@ export default function Home() {
                 <div className="mr-2 flex h-10 w-10 items-center justify-center rounded-xl bg-white/20">
                   <Image src="/dosen.png" alt="Dosen" width={18} height={18} />
                 </div>
-                <p className="text-xs font-semibold text-emerald-50">
-                  Dosen
-                </p>
+                <p className="text-xs font-semibold text-emerald-50">Dosen</p>
               </div>
 
               <div className="rounded-xl bg-white/15 flex flex-row items-center p-4 backdrop-blur">
                 <div className="mr-2 flex h-10 w-10 items-center justify-center rounded-xl bg-white/20">
                   <Image src="/doctor.png" alt="SOP" width={18} height={18} />
                 </div>
-                <p className="text-xs font-semibold text-emerald-50">
-                  SOP
-                </p>
+                <p className="text-xs font-semibold text-emerald-50">SOP</p>
               </div>
             </div>
 
@@ -158,7 +155,6 @@ export default function Home() {
           {/* RIGHT SIDE */}
           <div className="flex min-h-[560px] items-center justify-center p-6 sm:p-10">
             <div className="w-full max-w-md">
-              
               {/* MOBILE HEADER */}
               <div className="mb-6 flex flex-col items-center text-center md:hidden">
                 <div className="mb-3 flex h-16 w-16 items-center justify-center rounded-2xl bg-emerald-100">
@@ -189,6 +185,15 @@ export default function Home() {
               </div>
 
               <div className="flex flex-col gap-5">
+                {errorMessage && (
+                  <div
+                    role="alert"
+                    className="rounded-xl border border-red-200 bg-red-50 px-4 py-3 text-sm font-semibold text-red-700"
+                  >
+                    {errorMessage}
+                  </div>
+                )}
+
                 <div className="flex flex-col gap-2">
                   <label className="text-sm font-bold text-gray-700">
                     Email
@@ -198,7 +203,10 @@ export default function Home() {
                     type="email"
                     placeholder="Masukkan email"
                     value={email}
-                    onChange={(e) => setEmail(e.target.value)}
+                    onChange={(e) => {
+                      setEmail(e.target.value);
+                      setErrorMessage("");
+                    }}
                     className="w-full rounded-xl border border-gray-200 bg-gray-50 px-4 py-4 text-sm font-medium text-gray-700 outline-none transition focus:border-emerald-500 focus:bg-white focus:ring-4 focus:ring-emerald-100"
                   />
                 </div>
@@ -212,7 +220,10 @@ export default function Home() {
                     type="password"
                     placeholder="Masukkan password"
                     value={password}
-                    onChange={(e) => setPassword(e.target.value)}
+                    onChange={(e) => {
+                      setPassword(e.target.value);
+                      setErrorMessage("");
+                    }}
                     onKeyDown={(e) => {
                       if (e.key === "Enter") {
                         handleLogin();
@@ -239,7 +250,6 @@ export default function Home() {
                   Manajemen sesi ujian lebih mudah dan terstruktur
                 </p>
               </div>
-
             </div>
           </div>
         </div>
