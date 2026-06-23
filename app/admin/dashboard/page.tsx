@@ -39,6 +39,791 @@ const Page = () => {
   const [selectedDeleteTest, setSelectedDeleteTest] = useState(false);
   const [testDeleteAktif, setTestDeleteAktif] = useState<any>(null);
 
+  const dataDosenSOP = [
+    {
+      sop: [
+        "KETERAMPILAN PEMERIKSAAN TANDA-TANDA VITAL",
+        "PEMERIKSAAN TTV",
+        "TTV",
+        "TANDA TANDA VITAL",
+        "TANDA-TANDA VITAL",
+      ],
+      dosen: "Hj. Winani, S.Kep., Ns., M.Kep.",
+    },
+    {
+      sop: [
+        "KETERAMPILAN PEREKAMAN EKG",
+        "PEREKAMAN EKG",
+        "EKG",
+        "EKG 12 SADAPAN",
+      ],
+      dosen: "Ns. Niken Wulan Hasti Murti, S.Kep., M.Kep.",
+    },
+    {
+      sop: [
+        "KETERAMPILAN PERAWATAN PAYUDARA",
+        "PERAWATAN PAYUDARA",
+        "PAYUDARA",
+      ],
+      dosen: "Evi Supriatun, S.Kep., Ns., M.Kep.",
+    },
+    {
+      sop: [
+        "KETERAMPILAN PENGUKURAN ANTROPOMETRI",
+        "PEMERIKSAAN ANTROPOMETRI",
+        "PENGUKURAN ANTROPOMETRI",
+        "ANTROPOMETRI",
+      ],
+      dosen: "Nurohmat, SKM, M.H.",
+    },
+    {
+      sop: [
+        "KETERAMPILAN PERILAKU KEKERASAN STRATEGI PELAKSANAAN 1 P",
+        "STRATEGI PELAKSANAAN 1 PERILAKU KEKERASAN",
+        "PERILAKU KEKERASAN",
+        "SP 1 PK",
+        "SP1 PK",
+      ],
+      dosen: "Wenny Nugrahati Carsita, S.Kep., Ns., M.Kep",
+    },
+    {
+      sop: [
+        "KETERAMPILAN LATIHAN RENTANG GERAK",
+        "LATIHAN RENTANG GERAK",
+        "RANGE OF MOTION",
+        "ROM",
+      ],
+      dosen: "Hasim Asyari, S.KM., M.Kes.",
+    },
+    {
+      sop: [
+        "KETERAMPILAN PENGHISAPAN JALAN NAPAS",
+        "PENGHISAPAN JALAN NAPAS",
+        "PENGHISAPAN JALAN NAFAS",
+        "SUCTION",
+      ],
+      dosen: "Berlian Kusuma Dewi, S.Kep., Ns., MS.",
+    },
+    {
+      sop: [
+        "HALUSINASI STRATEGI PELAKSANAAN 1 P",
+        "STRATEGI PELAKSANAAN 1 HALUSINASI",
+        "SP 1 HALUSINASI",
+        "SP1 HALUSINASI",
+        "HALUSINASI",
+      ],
+      dosen: "Mira Wahyu Kusumawati, S.Kep., Ns., M.Kep",
+    },
+    {
+      sop: [
+        "KETERAMPILAN PERAWATAN LUKA",
+        "PERAWATAN LUKA",
+        "LUKA",
+      ],
+      dosen: "Dr. H. Priyanto, M.Kes.",
+    },
+    {
+      sop: [
+        "KETERAMPILAN PEMASANGAN KATETER URINE PASIEN LAKI-LAKI",
+        "PEMASANGAN KATETER URINE PRIA",
+        "PEMASANGAN KATETER URINE LAKI LAKI",
+        "KATETER URINE PRIA",
+        "KATETER URINE LAKI LAKI",
+        "KATETER URIN PRIA",
+        "KATETER URIN LAKI LAKI",
+      ],
+      dosen: "H. Bachtiar Efendi, S.Kep., Ns., M.H.",
+    },
+    {
+      sop: [
+        "KETERAMPILAN PEMERIKSAAN LEOPOLD",
+        "PEMERIKSAAN LEOPOLD",
+        "LEOPOLD",
+      ],
+      dosen: "Nengsih Yulianingsih, S.Kep., Ns., M.PH",
+    },
+    {
+      sop: [
+        "KETERAMPILAN LATIHAN BATUK EFEKTIF",
+        "LATIHAN BATUK EFEKTIF",
+        "BATUK EFEKTIF",
+      ],
+      dosen: "Dr. Indra Ruswandi, S.Kep., Ns., M.PH",
+    },
+    {
+      sop: [
+        "KETERAMPILAN RESUSITASI JANTUNG PARU PADA PASIEN DEWASA",
+        "RESUSITASI JANTUNG PARU PADA PASIEN DEWASA",
+        "RESUSITASI JANTUNG PARU",
+        "RJP DEWASA",
+        "RJP",
+      ],
+      dosen: "Sally Yustinawati S., S.Kep., Ns., M.Kep.",
+    },
+    {
+      sop: [
+        "KETERAMPILAN PERAWATAN TALI PUSAT",
+        "PERAWATAN TALI PUSAT",
+        "TALI PUSAT",
+      ],
+      dosen: "Ike Puspitaningrum, S.Kep., Ns., M.Kep.",
+    },
+  ];
+  
+  const normalizeText = (text: string) => {
+    return String(text || "")
+      .toLowerCase()
+      .replace(/-/g, " ")
+      .replace(/[^\w\s]/g, " ")
+      .replace(/\s+/g, " ")
+      .trim();
+  };
+  
+  const getIndexSOP = (namaSOP?: string) => {
+    const sopNormal = normalizeText(namaSOP || "");
+  
+    return dataDosenSOP.findIndex((item) =>
+      item.sop.some((nama) => {
+        const targetNormal = normalizeText(nama);
+  
+        return (
+          sopNormal === targetNormal ||
+          sopNormal.includes(targetNormal) ||
+          targetNormal.includes(sopNormal)
+        );
+      })
+    );
+  };
+  
+  const getNamaDosenBySOP = (namaSOP?: string) => {
+    const indexSOP = getIndexSOP(namaSOP);
+  
+    if (indexSOP === -1) return "-";
+  
+    return dataDosenSOP[indexSOP].dosen;
+  };
+  
+  const getTestByUrutanSOP = (listTest: any[], indexSOP: number) => {
+    return listTest
+      .filter((test) => getIndexSOP(test.sop) === indexSOP)
+      .sort((a, b) => Number(b.id) - Number(a.id))[0];
+  };
+  
+  const getNamaSheetUnik = (workbook: any, namaSheet: string) => {
+    let cleanName = String(namaSheet || "Sheet")
+      .replace(/[\\/:*?"<>|]/g, "")
+      .slice(0, 31);
+  
+    if (!cleanName) cleanName = "Sheet";
+  
+    let finalName = cleanName;
+    let counter = 1;
+  
+    while (workbook.SheetNames.includes(finalName)) {
+      const suffix = `_${counter}`;
+      finalName = `${cleanName.slice(0, 31 - suffix.length)}${suffix}`;
+      counter++;
+    }
+  
+    return finalName;
+  };
+  
+  const handleCetakExcel = () => {
+    setIsLoading(true);
+  
+    try {
+      if (siswaList.length === 0) {
+        alert("Data siswa masih kosong");
+        return;
+      }
+  
+      const dataExcel = siswaList.map((siswa, index) => {
+        const testMahasiswa = testAllUserList.filter(
+          (test) =>
+            Number(test.user) === Number(siswa.id) &&
+            test.user_detail?.is_staff !== true
+        );
+  
+        const testMahasiswaSesuaiUrutan = dataDosenSOP
+          .map((_, sopIndex) => getTestByUrutanSOP(testMahasiswa, sopIndex))
+          .filter(Boolean) as any[];
+  
+        const row: any = {
+          No: index + 1,
+          "Nama Siswa": siswa.nama_lengkap,
+          NIM: siswa.nim || "-",
+          Kelas: siswa.kelas || "-",
+        };
+  
+        dataDosenSOP.forEach((_, sopIndex) => {
+          const testSOP = getTestByUrutanSOP(testMahasiswa, sopIndex);
+  
+          row[`SOP ${sopIndex + 1}`] = testSOP?.total_nilai ?? "-";
+        });
+  
+        const totalNilai = testMahasiswaSesuaiUrutan.reduce((acc, test) => {
+          return acc + Number(test.total_nilai || 0);
+        }, 0);
+  
+        const jumlahSOPDinilai = testMahasiswaSesuaiUrutan.length;
+  
+        const rataRataNilai =
+          jumlahSOPDinilai > 0
+            ? Number((totalNilai / jumlahSOPDinilai).toFixed(2))
+            : 0;
+  
+        const tanggalTest = [...testMahasiswaSesuaiUrutan].sort(
+          (a, b) => Number(b.id) - Number(a.id)
+        )[0]?.created_at;
+  
+        row["Rata-rata Nilai"] = rataRataNilai;
+        row["Status"] = rataRataNilai > 75 ? "Lulus" : "Tidak Lulus";
+        row["Tanggal Test"] = tanggalTest
+          ? new Date(tanggalTest).toLocaleDateString("id-ID")
+          : "-";
+  
+        return row;
+      });
+  
+      const dataDaftarSOP = dataDosenSOP.map((item, index) => ({
+        "Kode SOP": `SOP ${index + 1}`,
+        "Nama SOP": item.sop[0],
+        "Dosen Penguji": item.dosen,
+      }));
+  
+      const workbook = XLSX.utils.book_new();
+  
+      const worksheetNilai = XLSX.utils.json_to_sheet(dataExcel);
+      const worksheetDaftarSOP = XLSX.utils.json_to_sheet(dataDaftarSOP);
+  
+      worksheetNilai["!cols"] = [
+        { wch: 6 },
+        { wch: 32 },
+        { wch: 18 },
+        { wch: 12 },
+        ...Array.from({ length: 14 }).map(() => ({ wch: 10 })),
+        { wch: 18 },
+        { wch: 16 },
+        { wch: 18 },
+      ];
+  
+      worksheetDaftarSOP["!cols"] = [
+        { wch: 14 },
+        { wch: 75 },
+        { wch: 45 },
+      ];
+  
+      const headerStyle = {
+        font: {
+          name: "Arial",
+          bold: true,
+          color: { rgb: "FFFFFF" },
+        },
+        fill: {
+          fgColor: { rgb: "0F766E" },
+        },
+        alignment: {
+          horizontal: "center",
+          vertical: "center",
+          wrapText: true,
+        },
+        border: {
+          top: { style: "thin", color: { rgb: "0F766E" } },
+          bottom: { style: "thin", color: { rgb: "0F766E" } },
+          left: { style: "thin", color: { rgb: "0F766E" } },
+          right: { style: "thin", color: { rgb: "0F766E" } },
+        },
+      };
+  
+      const bodyStyle = {
+        font: {
+          name: "Arial",
+          color: { rgb: "111827" },
+        },
+        alignment: {
+          vertical: "center",
+          wrapText: true,
+        },
+        border: {
+          top: { style: "thin", color: { rgb: "D9E2EC" } },
+          bottom: { style: "thin", color: { rgb: "D9E2EC" } },
+          left: { style: "thin", color: { rgb: "D9E2EC" } },
+          right: { style: "thin", color: { rgb: "D9E2EC" } },
+        },
+      };
+  
+      const centerBodyStyle = {
+        ...bodyStyle,
+        alignment: {
+          horizontal: "center",
+          vertical: "center",
+          wrapText: true,
+        },
+      };
+  
+      const greenScoreStyle = {
+        ...centerBodyStyle,
+        font: {
+          name: "Arial",
+          bold: true,
+          color: { rgb: "047857" },
+        },
+      };
+  
+      const emptyScoreStyle = {
+        ...centerBodyStyle,
+        font: {
+          name: "Arial",
+          bold: true,
+          color: { rgb: "9CA3AF" },
+        },
+        fill: {
+          fgColor: { rgb: "F3F4F6" },
+        },
+      };
+  
+      const getStatusStyle = (status: string) => ({
+        ...centerBodyStyle,
+        font: {
+          name: "Arial",
+          bold: true,
+          color: {
+            rgb: status === "Lulus" ? "047857" : "DC2626",
+          },
+        },
+        fill: {
+          fgColor: {
+            rgb: status === "Lulus" ? "DCFCE7" : "FEE2E2",
+          },
+        },
+      });
+  
+      const applyStyleToSheet = (worksheet: any, type: "rekap" | "daftar") => {
+        const range = XLSX.utils.decode_range(worksheet["!ref"] || "A1:A1");
+  
+        for (let row = range.s.r; row <= range.e.r; row++) {
+          for (let col = range.s.c; col <= range.e.c; col++) {
+            const cellAddress = XLSX.utils.encode_cell({ r: row, c: col });
+            const cell = worksheet[cellAddress];
+  
+            if (!cell) continue;
+  
+            if (row === 0) {
+              cell.s = headerStyle;
+              continue;
+            }
+  
+            const isKolomSOP = type === "rekap" && col >= 4 && col <= 17;
+            const isKolomRataRata = type === "rekap" && col === 18;
+            const isKolomStatus = type === "rekap" && col === 19;
+  
+            if (isKolomSOP) {
+              cell.s = cell.v === "-" ? emptyScoreStyle : greenScoreStyle;
+            } else if (isKolomRataRata) {
+              cell.s = greenScoreStyle;
+            } else if (isKolomStatus) {
+              cell.s = getStatusStyle(cell.v);
+            } else {
+              cell.s = col === 0 || col >= 2 ? centerBodyStyle : bodyStyle;
+            }
+          }
+        }
+  
+        worksheet["!rows"] = Array.from({ length: range.e.r + 1 }).map(
+          (_, index) => ({
+            hpt: index === 0 ? 28 : 24,
+          })
+        );
+  
+        worksheet["!autofilter"] = {
+          ref: worksheet["!ref"],
+        };
+      };
+  
+      applyStyleToSheet(worksheetNilai, "rekap");
+      applyStyleToSheet(worksheetDaftarSOP, "daftar");
+  
+      XLSX.utils.book_append_sheet(workbook, worksheetNilai, "Rekap Nilai");
+      XLSX.utils.book_append_sheet(workbook, worksheetDaftarSOP, "Daftar SOP");
+  
+      XLSX.writeFile(workbook, "rekap_nilai_sop_mahasiswa.xlsx");
+    } catch (error) {
+      console.error("Gagal mencetak Excel:", error);
+      alert("Gagal mencetak Excel");
+    } finally {
+      setIsLoading(false);
+    }
+  };
+  
+  const handleCetakExcelPerSiswa = async () => {
+    setIsLoading(true);
+  
+    try {
+      if (!mahasiswaAktif) {
+        alert("Data mahasiswa belum dipilih");
+        return;
+      }
+  
+      if (testUserList.length === 0) {
+        alert("Mahasiswa ini belum memiliki data SOP");
+        return;
+      }
+  
+      const workbook = XLSX.utils.book_new();
+  
+      const testUserListSesuaiUrutan = dataDosenSOP
+        .map((_, sopIndex) => getTestByUrutanSOP(testUserList, sopIndex))
+        .filter(Boolean) as any[];
+  
+      const listSOPUntukCetak =
+        testUserListSesuaiUrutan.length > 0
+          ? testUserListSesuaiUrutan
+          : [...testUserList].sort((a, b) => Number(a.id) - Number(b.id));
+  
+      for (const sop of listSOPUntukCetak) {
+        const response = await getDetailTestById(sop.id);
+  
+        if (response.status !== 200) continue;
+  
+        const detailData: detailTestType[] = response.data;
+  
+        const detailIds = detailData.map((item: any) => item.soal_sop);
+  
+        const responsesDetailSoal = await Promise.all(
+          detailIds.map(async (id: number) => {
+            const res = await getDetailSop(id);
+  
+            return {
+              id,
+              response: res,
+            };
+          })
+        );
+  
+        const detailSoalSemua: detailSoalType[] = responsesDetailSoal
+          .filter((item) => item.response.status === 200)
+          .flatMap((item) => item.response.data);
+  
+        const totalNilaiBobot = detailData.reduce((total, item) => {
+          return total + Number(item.soal_sop_detail?.bobot || 0);
+        }, 0);
+  
+        const totalNilaiDidapat = detailData.reduce((acc, item) => {
+          return acc + Number(item.nilai || 0);
+        }, 0);
+  
+        const totalNilai =
+          totalNilaiBobot > 0
+            ? Number(((totalNilaiDidapat / totalNilaiBobot) * 100).toFixed(0))
+            : 0;
+  
+        const nomorSOP = getIndexSOP(sop.sop) + 1;
+        const namaDosen = getNamaDosenBySOP(sop.sop);
+  
+        const worksheetData: any[][] = [
+          ["DETAIL NILAI SOP MAHASISWA"],
+          [],
+          ["Nama Siswa", mahasiswaAktif.nama_lengkap || "-"],
+          ["NIM", mahasiswaAktif.nim || "-"],
+          ["Kelas", mahasiswaAktif.kelas || "-"],
+          ["Kode SOP", nomorSOP > 0 ? `SOP ${nomorSOP}` : "-"],
+          ["Nama SOP", sop.sop || "-"],
+          ["Total Nilai", totalNilai],
+          ["Nama Dosen", namaDosen],
+          [],
+          ["No", "Soal SOP", "Bobot", "Nilai yang Didapat"],
+        ];
+  
+        detailData.forEach((item, index) => {
+          worksheetData.push([
+            index + 1,
+            item.soal_sop_detail?.soal || "-",
+            item.soal_sop_detail?.bobot || 0,
+            item.nilai ?? 0,
+          ]);
+  
+          const detailSoalBySop = detailSoalSemua.filter(
+            (detail) => Number(detail.sop) === Number(item.soal_sop)
+          );
+  
+          detailSoalBySop.forEach((detail) => {
+            worksheetData.push([
+              "",
+              `• ${detail.deskripsi_soal || "-"}`,
+              "",
+              "",
+            ]);
+          });
+        });
+  
+        const worksheet = XLSX.utils.aoa_to_sheet(worksheetData);
+  
+        worksheet["!cols"] = [
+          { wch: 8 },
+          { wch: 80 },
+          { wch: 12 },
+          { wch: 22 },
+        ];
+  
+        worksheet["!merges"] = [
+          {
+            s: { r: 0, c: 0 },
+            e: { r: 0, c: 3 },
+          },
+        ];
+  
+        const baseBorder = {
+          top: { style: "thin", color: { rgb: "D9E2EC" } },
+          bottom: { style: "thin", color: { rgb: "D9E2EC" } },
+          left: { style: "thin", color: { rgb: "D9E2EC" } },
+          right: { style: "thin", color: { rgb: "D9E2EC" } },
+        };
+  
+        const greenBorder = {
+          top: { style: "thin", color: { rgb: "A7F3D0" } },
+          bottom: { style: "thin", color: { rgb: "A7F3D0" } },
+          left: { style: "thin", color: { rgb: "A7F3D0" } },
+          right: { style: "thin", color: { rgb: "A7F3D0" } },
+        };
+  
+        const baseStyle = {
+          font: {
+            name: "Arial",
+            sz: 11,
+          },
+          alignment: {
+            vertical: "center",
+            wrapText: true,
+          },
+          border: baseBorder,
+        };
+  
+        const centerStyle = {
+          ...baseStyle,
+          alignment: {
+            horizontal: "center",
+            vertical: "center",
+            wrapText: true,
+          },
+        };
+  
+        const range = XLSX.utils.decode_range(worksheet["!ref"] || "A1:D1");
+  
+        for (let row = range.s.r; row <= range.e.r; row++) {
+          for (let col = range.s.c; col <= range.e.c; col++) {
+            const cellAddress = XLSX.utils.encode_cell({ r: row, c: col });
+  
+            if (!worksheet[cellAddress]) continue;
+  
+            worksheet[cellAddress].s = baseStyle;
+          }
+        }
+  
+        worksheet["A1"].s = {
+          font: {
+            name: "Arial",
+            sz: 16,
+            bold: true,
+            color: { rgb: "FFFFFF" },
+          },
+          fill: {
+            fgColor: { rgb: "059669" },
+          },
+          alignment: {
+            horizontal: "center",
+            vertical: "center",
+          },
+        };
+  
+        for (let row = 2; row <= 8; row++) {
+          const labelCell = `A${row + 1}`;
+          const valueCell = `B${row + 1}`;
+  
+          if (worksheet[labelCell]) {
+            worksheet[labelCell].s = {
+              font: {
+                name: "Arial",
+                bold: true,
+                color: { rgb: "064E3B" },
+              },
+              fill: {
+                fgColor: { rgb: "D1FAE5" },
+              },
+              alignment: {
+                vertical: "center",
+                wrapText: true,
+              },
+              border: greenBorder,
+            };
+          }
+  
+          if (worksheet[valueCell]) {
+            worksheet[valueCell].s = {
+              font: {
+                name: "Arial",
+                bold: true,
+                color: { rgb: "111827" },
+              },
+              alignment: {
+                vertical: "center",
+                wrapText: true,
+              },
+              border: greenBorder,
+            };
+          }
+        }
+  
+        const tableHeaderRow = 11;
+  
+        ["A", "B", "C", "D"].forEach((col) => {
+          const cell = `${col}${tableHeaderRow}`;
+  
+          if (worksheet[cell]) {
+            worksheet[cell].s = {
+              font: {
+                name: "Arial",
+                bold: true,
+                color: { rgb: "FFFFFF" },
+              },
+              fill: {
+                fgColor: { rgb: "0F766E" },
+              },
+              alignment: {
+                horizontal: "center",
+                vertical: "center",
+                wrapText: true,
+              },
+              border: {
+                top: { style: "thin", color: { rgb: "0F766E" } },
+                bottom: { style: "thin", color: { rgb: "0F766E" } },
+                left: { style: "thin", color: { rgb: "0F766E" } },
+                right: { style: "thin", color: { rgb: "0F766E" } },
+              },
+            };
+          }
+        });
+  
+        for (let row = tableHeaderRow + 1; row <= range.e.r + 1; row++) {
+          const noCell = worksheet[`A${row}`];
+          const soalCell = worksheet[`B${row}`];
+          const bobotCell = worksheet[`C${row}`];
+          const nilaiCell = worksheet[`D${row}`];
+  
+          const isDetailSoal = noCell && noCell.v === "";
+  
+          if (isDetailSoal) {
+            ["A", "B", "C", "D"].forEach((col) => {
+              const cell = worksheet[`${col}${row}`];
+  
+              if (!cell) return;
+  
+              cell.s = {
+                font: {
+                  name: "Arial",
+                  italic: true,
+                  color: { rgb: "374151" },
+                },
+                fill: {
+                  fgColor: { rgb: "ECFDF5" },
+                },
+                alignment: {
+                  vertical: "center",
+                  wrapText: true,
+                },
+                border: {
+                  top: { style: "thin", color: { rgb: "D1FAE5" } },
+                  bottom: { style: "thin", color: { rgb: "D1FAE5" } },
+                  left: { style: "thin", color: { rgb: "D1FAE5" } },
+                  right: { style: "thin", color: { rgb: "D1FAE5" } },
+                },
+              };
+            });
+  
+            continue;
+          }
+  
+          if (noCell) {
+            noCell.s = {
+              ...centerStyle,
+              font: {
+                name: "Arial",
+                bold: true,
+              },
+            };
+          }
+  
+          if (soalCell) {
+            soalCell.s = {
+              ...baseStyle,
+              font: {
+                name: "Arial",
+                color: { rgb: "111827" },
+              },
+            };
+          }
+  
+          if (bobotCell) {
+            bobotCell.s = {
+              ...centerStyle,
+              font: {
+                name: "Arial",
+                bold: true,
+              },
+            };
+          }
+  
+          if (nilaiCell) {
+            nilaiCell.s = {
+              ...centerStyle,
+              font: {
+                name: "Arial",
+                bold: true,
+                color: {
+                  rgb: Number(nilaiCell.v) > 1 ? "047857" : "DC2626",
+                },
+              },
+            };
+          }
+        }
+  
+        worksheet["!rows"] = worksheetData.map((_, index) => {
+          if (index === 0) return { hpt: 28 };
+          if (index >= 2 && index <= 8) return { hpt: 22 };
+          if (index === 10) return { hpt: 24 };
+  
+          return { hpt: 35 };
+        });
+  
+        const namaSheet =
+          nomorSOP > 0
+            ? `SOP ${nomorSOP}`
+            : String(sop.sop || "SOP")
+                .replace(/[\\/:*?"<>|]/g, "")
+                .slice(0, 31);
+  
+        XLSX.utils.book_append_sheet(
+          workbook,
+          worksheet,
+          getNamaSheetUnik(workbook, namaSheet)
+        );
+      }
+  
+      const namaFile = `detail_nilai_${mahasiswaAktif.nama_lengkap || "mahasiswa"}`
+        .replace(/[\\/:*?"<>|]/g, "")
+        .replace(/\s+/g, "_")
+        .toLowerCase();
+  
+      XLSX.writeFile(workbook, `${namaFile}.xlsx`);
+    } catch (error) {
+      console.error("Gagal cetak Excel per siswa:", error);
+      alert("Gagal mencetak Excel per siswa");
+    } finally {
+      setIsLoading(false);
+    }
+  };
+  
+ 
+
     const groupedData = detailTestData.reduce((acc: any, item) => {
         const category = item.soal_sop_detail.category || "Lainnya";
         if (!acc[category]) {
@@ -192,598 +977,598 @@ const Page = () => {
       .replace("Oral", "Oral");
   };
 
-  const handleCetakExcel = () => {
-    setIsLoading(true);
+  // const handleCetakExcel = () => {
+  //   setIsLoading(true);
   
-    try {
-      if (siswaList.length === 0) {
-        alert("Data siswa masih kosong");
-        return;
-      }
+  //   try {
+  //     if (siswaList.length === 0) {
+  //       alert("Data siswa masih kosong");
+  //       return;
+  //     }
   
-      const daftarSOP = Array.from(
-        new Set(
-          testAllUserList
-            .filter((test) => test.user_detail?.is_staff !== true)
-            .map((test) => test.sop)
-        )
-      ).slice(0, 14);
+  //     const daftarSOP = Array.from(
+  //       new Set(
+  //         testAllUserList
+  //           .filter((test) => test.user_detail?.is_staff !== true)
+  //           .map((test) => test.sop)
+  //       )
+  //     ).slice(0, 14);
   
-      const dataExcel = siswaList.map((siswa, index) => {
-        const testMahasiswa = testAllUserList
-          .filter(
-            (test) =>
-              Number(test.user) === Number(siswa.id) &&
-              test.user_detail?.is_staff !== true
-          )
-          .sort((a, b) => Number(a.id) - Number(b.id));
+  //     const dataExcel = siswaList.map((siswa, index) => {
+  //       const testMahasiswa = testAllUserList
+  //         .filter(
+  //           (test) =>
+  //             Number(test.user) === Number(siswa.id) &&
+  //             test.user_detail?.is_staff !== true
+  //         )
+  //         .sort((a, b) => Number(a.id) - Number(b.id));
   
-        const row: any = {
-          No: index + 1,
-          "Nama Siswa": siswa.nama_lengkap,
-          NIM: siswa.nim || "-",
-          Kelas: siswa.kelas || "-",
-        };
+  //       const row: any = {
+  //         No: index + 1,
+  //         "Nama Siswa": siswa.nama_lengkap,
+  //         NIM: siswa.nim || "-",
+  //         Kelas: siswa.kelas || "-",
+  //       };
   
-        daftarSOP.forEach((namaSOP, sopIndex) => {
-          const testSOP = testMahasiswa.find(
-            (test) => String(test.sop) === String(namaSOP)
-          );
+  //       daftarSOP.forEach((namaSOP, sopIndex) => {
+  //         const testSOP = testMahasiswa.find(
+  //           (test) => String(test.sop) === String(namaSOP)
+  //         );
   
-          row[`SOP ${sopIndex + 1}`] = testSOP?.total_nilai ?? "-";
-        });
+  //         row[`SOP ${sopIndex + 1}`] = testSOP?.total_nilai ?? "-";
+  //       });
   
-        for (let i = daftarSOP.length; i < 14; i++) {
-          row[`SOP ${i + 1}`] = "-";
-        }
+  //       for (let i = daftarSOP.length; i < 14; i++) {
+  //         row[`SOP ${i + 1}`] = "-";
+  //       }
   
-        const totalNilai = testMahasiswa.reduce((acc, test) => {
-          return acc + Number(test.total_nilai || 0);
-        }, 0);
+  //       const totalNilai = testMahasiswa.reduce((acc, test) => {
+  //         return acc + Number(test.total_nilai || 0);
+  //       }, 0);
   
-        const jumlahSOPDinilai = testMahasiswa.length;
+  //       const jumlahSOPDinilai = testMahasiswa.length;
   
-        const rataRataNilai =
-          jumlahSOPDinilai > 0
-            ? Number((totalNilai / jumlahSOPDinilai).toFixed(2))
-            : 0;
+  //       const rataRataNilai =
+  //         jumlahSOPDinilai > 0
+  //           ? Number((totalNilai / jumlahSOPDinilai).toFixed(2))
+  //           : 0;
   
-        const tanggalTest = testMahasiswa[0]?.created_at;
+  //       const tanggalTest = testMahasiswa[0]?.created_at;
   
-        row["Rata-rata Nilai"] = rataRataNilai;
-        row["Status"] = rataRataNilai > 75 ? "Lulus" : "Tidak Lulus";
-        row["Tanggal Test"] = tanggalTest
-          ? new Date(tanggalTest).toLocaleDateString("id-ID")
-          : "-";
+  //       row["Rata-rata Nilai"] = rataRataNilai;
+  //       row["Status"] = rataRataNilai > 75 ? "Lulus" : "Tidak Lulus";
+  //       row["Tanggal Test"] = tanggalTest
+  //         ? new Date(tanggalTest).toLocaleDateString("id-ID")
+  //         : "-";
   
-        return row;
-      });
+  //       return row;
+  //     });
   
-      const dataDaftarSOP = Array.from({ length: 14 }).map((_, index) => ({
-        "Kode SOP": `SOP ${index + 1}`,
-        "Nama SOP": daftarSOP[index] || "-",
-      }));
+  //     const dataDaftarSOP = Array.from({ length: 14 }).map((_, index) => ({
+  //       "Kode SOP": `SOP ${index + 1}`,
+  //       "Nama SOP": daftarSOP[index] || "-",
+  //     }));
   
-      const workbook = XLSX.utils.book_new();
+  //     const workbook = XLSX.utils.book_new();
   
-      const worksheetNilai = XLSX.utils.json_to_sheet(dataExcel);
-      const worksheetDaftarSOP = XLSX.utils.json_to_sheet(dataDaftarSOP);
+  //     const worksheetNilai = XLSX.utils.json_to_sheet(dataExcel);
+  //     const worksheetDaftarSOP = XLSX.utils.json_to_sheet(dataDaftarSOP);
   
-      worksheetNilai["!cols"] = [
-        { wch: 6 },
-        { wch: 32 },
-        { wch: 18 },
-        { wch: 12 },
-        ...Array.from({ length: 14 }).map(() => ({ wch: 10 })),
-        { wch: 18 },
-        { wch: 16 },
-        { wch: 18 },
-      ];
+  //     worksheetNilai["!cols"] = [
+  //       { wch: 6 },
+  //       { wch: 32 },
+  //       { wch: 18 },
+  //       { wch: 12 },
+  //       ...Array.from({ length: 14 }).map(() => ({ wch: 10 })),
+  //       { wch: 18 },
+  //       { wch: 16 },
+  //       { wch: 18 },
+  //     ];
   
-      worksheetDaftarSOP["!cols"] = [
-        { wch: 14 },
-        { wch: 70 },
-      ];
+  //     worksheetDaftarSOP["!cols"] = [
+  //       { wch: 14 },
+  //       { wch: 70 },
+  //     ];
   
-      const headerStyle = {
-        font: {
-          name: "Arial",
-          bold: true,
-          color: { rgb: "FFFFFF" },
-        },
-        fill: {
-          fgColor: { rgb: "0F766E" },
-        },
-        alignment: {
-          horizontal: "center",
-          vertical: "center",
-          wrapText: true,
-        },
-        border: {
-          top: { style: "thin", color: { rgb: "0F766E" } },
-          bottom: { style: "thin", color: { rgb: "0F766E" } },
-          left: { style: "thin", color: { rgb: "0F766E" } },
-          right: { style: "thin", color: { rgb: "0F766E" } },
-        },
-      };
+  //     const headerStyle = {
+  //       font: {
+  //         name: "Arial",
+  //         bold: true,
+  //         color: { rgb: "FFFFFF" },
+  //       },
+  //       fill: {
+  //         fgColor: { rgb: "0F766E" },
+  //       },
+  //       alignment: {
+  //         horizontal: "center",
+  //         vertical: "center",
+  //         wrapText: true,
+  //       },
+  //       border: {
+  //         top: { style: "thin", color: { rgb: "0F766E" } },
+  //         bottom: { style: "thin", color: { rgb: "0F766E" } },
+  //         left: { style: "thin", color: { rgb: "0F766E" } },
+  //         right: { style: "thin", color: { rgb: "0F766E" } },
+  //       },
+  //     };
   
-      const bodyStyle = {
-        font: {
-          name: "Arial",
-          color: { rgb: "111827" },
-        },
-        alignment: {
-          vertical: "center",
-          wrapText: true,
-        },
-        border: {
-          top: { style: "thin", color: { rgb: "D9E2EC" } },
-          bottom: { style: "thin", color: { rgb: "D9E2EC" } },
-          left: { style: "thin", color: { rgb: "D9E2EC" } },
-          right: { style: "thin", color: { rgb: "D9E2EC" } },
-        },
-      };
+  //     const bodyStyle = {
+  //       font: {
+  //         name: "Arial",
+  //         color: { rgb: "111827" },
+  //       },
+  //       alignment: {
+  //         vertical: "center",
+  //         wrapText: true,
+  //       },
+  //       border: {
+  //         top: { style: "thin", color: { rgb: "D9E2EC" } },
+  //         bottom: { style: "thin", color: { rgb: "D9E2EC" } },
+  //         left: { style: "thin", color: { rgb: "D9E2EC" } },
+  //         right: { style: "thin", color: { rgb: "D9E2EC" } },
+  //       },
+  //     };
   
-      const centerBodyStyle = {
-        ...bodyStyle,
-        alignment: {
-          horizontal: "center",
-          vertical: "center",
-          wrapText: true,
-        },
-      };
+  //     const centerBodyStyle = {
+  //       ...bodyStyle,
+  //       alignment: {
+  //         horizontal: "center",
+  //         vertical: "center",
+  //         wrapText: true,
+  //       },
+  //     };
   
-      const greenScoreStyle = {
-        ...centerBodyStyle,
-        font: {
-          name: "Arial",
-          bold: true,
-          color: { rgb: "047857" },
-        },
-      };
+  //     const greenScoreStyle = {
+  //       ...centerBodyStyle,
+  //       font: {
+  //         name: "Arial",
+  //         bold: true,
+  //         color: { rgb: "047857" },
+  //       },
+  //     };
   
-      const emptyScoreStyle = {
-        ...centerBodyStyle,
-        font: {
-          name: "Arial",
-          bold: true,
-          color: { rgb: "9CA3AF" },
-        },
-        fill: {
-          fgColor: { rgb: "F3F4F6" },
-        },
-      };
+  //     const emptyScoreStyle = {
+  //       ...centerBodyStyle,
+  //       font: {
+  //         name: "Arial",
+  //         bold: true,
+  //         color: { rgb: "9CA3AF" },
+  //       },
+  //       fill: {
+  //         fgColor: { rgb: "F3F4F6" },
+  //       },
+  //     };
   
-      const getStatusStyle = (status: string) => ({
-        ...centerBodyStyle,
-        font: {
-          name: "Arial",
-          bold: true,
-          color: {
-            rgb: status === "Lulus" ? "047857" : "DC2626",
-          },
-        },
-        fill: {
-          fgColor: {
-            rgb: status === "Lulus" ? "DCFCE7" : "FEE2E2",
-          },
-        },
-      });
+  //     const getStatusStyle = (status: string) => ({
+  //       ...centerBodyStyle,
+  //       font: {
+  //         name: "Arial",
+  //         bold: true,
+  //         color: {
+  //           rgb: status === "Lulus" ? "047857" : "DC2626",
+  //         },
+  //       },
+  //       fill: {
+  //         fgColor: {
+  //           rgb: status === "Lulus" ? "DCFCE7" : "FEE2E2",
+  //         },
+  //       },
+  //     });
   
-      const applyStyleToSheet = (worksheet: any, type: "rekap" | "daftar") => {
-        const range = XLSX.utils.decode_range(worksheet["!ref"] || "A1:A1");
+  //     const applyStyleToSheet = (worksheet: any, type: "rekap" | "daftar") => {
+  //       const range = XLSX.utils.decode_range(worksheet["!ref"] || "A1:A1");
   
-        for (let row = range.s.r; row <= range.e.r; row++) {
-          for (let col = range.s.c; col <= range.e.c; col++) {
-            const cellAddress = XLSX.utils.encode_cell({ r: row, c: col });
-            const cell = worksheet[cellAddress];
+  //       for (let row = range.s.r; row <= range.e.r; row++) {
+  //         for (let col = range.s.c; col <= range.e.c; col++) {
+  //           const cellAddress = XLSX.utils.encode_cell({ r: row, c: col });
+  //           const cell = worksheet[cellAddress];
   
-            if (!cell) continue;
+  //           if (!cell) continue;
   
-            if (row === 0) {
-              cell.s = headerStyle;
-              continue;
-            }
+  //           if (row === 0) {
+  //             cell.s = headerStyle;
+  //             continue;
+  //           }
   
-            const isKolomSOP = type === "rekap" && col >= 4 && col <= 17;
-            const isKolomRataRata = type === "rekap" && col === 18;
-            const isKolomStatus = type === "rekap" && col === 19;
+  //           const isKolomSOP = type === "rekap" && col >= 4 && col <= 17;
+  //           const isKolomRataRata = type === "rekap" && col === 18;
+  //           const isKolomStatus = type === "rekap" && col === 19;
   
-            if (isKolomSOP) {
-              cell.s = cell.v === "-" ? emptyScoreStyle : greenScoreStyle;
-            } else if (isKolomRataRata) {
-              cell.s = greenScoreStyle;
-            } else if (isKolomStatus) {
-              cell.s = getStatusStyle(cell.v);
-            } else {
-              cell.s = col === 0 || col >= 2 ? centerBodyStyle : bodyStyle;
-            }
-          }
-        }
+  //           if (isKolomSOP) {
+  //             cell.s = cell.v === "-" ? emptyScoreStyle : greenScoreStyle;
+  //           } else if (isKolomRataRata) {
+  //             cell.s = greenScoreStyle;
+  //           } else if (isKolomStatus) {
+  //             cell.s = getStatusStyle(cell.v);
+  //           } else {
+  //             cell.s = col === 0 || col >= 2 ? centerBodyStyle : bodyStyle;
+  //           }
+  //         }
+  //       }
   
-        worksheet["!rows"] = Array.from({ length: range.e.r + 1 }).map(
-          (_, index) => ({
-            hpt: index === 0 ? 28 : 24,
-          })
-        );
+  //       worksheet["!rows"] = Array.from({ length: range.e.r + 1 }).map(
+  //         (_, index) => ({
+  //           hpt: index === 0 ? 28 : 24,
+  //         })
+  //       );
   
-        worksheet["!autofilter"] = {
-          ref: worksheet["!ref"],
-        };
-      };
+  //       worksheet["!autofilter"] = {
+  //         ref: worksheet["!ref"],
+  //       };
+  //     };
   
-      applyStyleToSheet(worksheetNilai, "rekap");
-      applyStyleToSheet(worksheetDaftarSOP, "daftar");
+  //     applyStyleToSheet(worksheetNilai, "rekap");
+  //     applyStyleToSheet(worksheetDaftarSOP, "daftar");
   
-      XLSX.utils.book_append_sheet(workbook, worksheetNilai, "Rekap Nilai");
-      XLSX.utils.book_append_sheet(workbook, worksheetDaftarSOP, "Daftar SOP");
+  //     XLSX.utils.book_append_sheet(workbook, worksheetNilai, "Rekap Nilai");
+  //     XLSX.utils.book_append_sheet(workbook, worksheetDaftarSOP, "Daftar SOP");
   
-      XLSX.writeFile(workbook, "rekap_nilai_sop_mahasiswa.xlsx");
-    } catch (error) {
-      // console.error("Gagal mencetak Excel:", error);
-      // alert("Gagal mencetak Excel");
-    } finally {
-      setIsLoading(false);
-    }
-  };
+  //     XLSX.writeFile(workbook, "rekap_nilai_sop_mahasiswa.xlsx");
+  //   } catch (error) {
+  //     // console.error("Gagal mencetak Excel:", error);
+  //     // alert("Gagal mencetak Excel");
+  //   } finally {
+  //     setIsLoading(false);
+  //   }
+  // };
 
-  const handleCetakExcelPerSiswa = async () => {
-    setIsLoading(true);
+  // const handleCetakExcelPerSiswa = async () => {
+  //   setIsLoading(true);
   
-    try {
-      if (!mahasiswaAktif) {
-        alert("Data mahasiswa belum dipilih");
-        return;
-      }
+  //   try {
+  //     if (!mahasiswaAktif) {
+  //       alert("Data mahasiswa belum dipilih");
+  //       return;
+  //     }
   
-      if (testUserList.length === 0) {
-        alert("Mahasiswa ini belum memiliki data SOP");
-        return;
-      }
+  //     if (testUserList.length === 0) {
+  //       alert("Mahasiswa ini belum memiliki data SOP");
+  //       return;
+  //     }
   
-      const workbook = XLSX.utils.book_new();
+  //     const workbook = XLSX.utils.book_new();
   
-      for (const sop of testUserList) {
-        const response = await getDetailTestById(sop.id);
+  //     for (const sop of testUserList) {
+  //       const response = await getDetailTestById(sop.id);
   
-        if (response.status !== 200) continue;
+  //       if (response.status !== 200) continue;
   
-        const detailData: detailTestType[] = response.data;
+  //       const detailData: detailTestType[] = response.data;
   
-        const detailIds = detailData.map((item: any) => item.soal_sop);
+  //       const detailIds = detailData.map((item: any) => item.soal_sop);
   
-        const responsesDetailSoal = await Promise.all(
-          detailIds.map(async (id: number) => {
-            const res = await getDetailSop(id);
+  //       const responsesDetailSoal = await Promise.all(
+  //         detailIds.map(async (id: number) => {
+  //           const res = await getDetailSop(id);
   
-            return {
-              id,
-              response: res,
-            };
-          })
-        );
+  //           return {
+  //             id,
+  //             response: res,
+  //           };
+  //         })
+  //       );
   
-        const detailSoalSemua: detailSoalType[] = responsesDetailSoal
-          .filter((item) => item.response.status === 200)
-          .flatMap((item) => item.response.data);
+  //       const detailSoalSemua: detailSoalType[] = responsesDetailSoal
+  //         .filter((item) => item.response.status === 200)
+  //         .flatMap((item) => item.response.data);
   
-        const totalNilaiBobot = detailData.reduce((total, item) => {
-          return total + Number(item.soal_sop_detail?.bobot || 0);
-        }, 0);
+  //       const totalNilaiBobot = detailData.reduce((total, item) => {
+  //         return total + Number(item.soal_sop_detail?.bobot || 0);
+  //       }, 0);
   
-        const totalNilaiDidapat = detailData.reduce((acc, item) => {
-          return acc + Number(item.nilai || 0);
-        }, 0);
+  //       const totalNilaiDidapat = detailData.reduce((acc, item) => {
+  //         return acc + Number(item.nilai || 0);
+  //       }, 0);
   
-        const totalNilai =
-          totalNilaiBobot > 0
-            ? Number(((totalNilaiDidapat / totalNilaiBobot) * 100).toFixed(0))
-            : 0;
+  //       const totalNilai =
+  //         totalNilaiBobot > 0
+  //           ? Number(((totalNilaiDidapat / totalNilaiBobot) * 100).toFixed(0))
+  //           : 0;
   
-        const namaDosen =
-          testAllUserList.find(
-            (test) =>
-              Number(test.sesi) === Number(sop.sesi) &&
-              test.user_detail?.is_staff === true
-          )?.user_detail?.nama_lengkap || "Unknown";
+  //       const namaDosen =
+  //         testAllUserList.find(
+  //           (test) =>
+  //             Number(test.sesi) === Number(sop.sesi) &&
+  //             test.user_detail?.is_staff === true
+  //         )?.user_detail?.nama_lengkap || "Unknown";
   
-        const worksheetData: any[][] = [
-          ["DETAIL NILAI SOP MAHASISWA"],
-          [],
-          ["Nama Siswa", mahasiswaAktif.nama_lengkap || "-"],
-          ["NIM", mahasiswaAktif.nim || "-"],
-          ["Kelas", mahasiswaAktif.kelas || "-"],
-          ["Nama SOP", sop.sop || "-"],
-          ["Total Nilai", totalNilai],
-          ["Nama Dosen", namaDosen],
-          [],
-          ["No", "Soal SOP", "Bobot", "Nilai yang Didapat"],
-        ];
+  //       const worksheetData: any[][] = [
+  //         ["DETAIL NILAI SOP MAHASISWA"],
+  //         [],
+  //         ["Nama Siswa", mahasiswaAktif.nama_lengkap || "-"],
+  //         ["NIM", mahasiswaAktif.nim || "-"],
+  //         ["Kelas", mahasiswaAktif.kelas || "-"],
+  //         ["Nama SOP", sop.sop || "-"],
+  //         ["Total Nilai", totalNilai],
+  //         ["Nama Dosen", namaDosen],
+  //         [],
+  //         ["No", "Soal SOP", "Bobot", "Nilai yang Didapat"],
+  //       ];
   
-        detailData.forEach((item, index) => {
-          worksheetData.push([
-            index + 1,
-            item.soal_sop_detail?.soal || "-",
-            item.soal_sop_detail?.bobot || 0,
-            item.nilai ?? 0,
-          ]);
+  //       detailData.forEach((item, index) => {
+  //         worksheetData.push([
+  //           index + 1,
+  //           item.soal_sop_detail?.soal || "-",
+  //           item.soal_sop_detail?.bobot || 0,
+  //           item.nilai ?? 0,
+  //         ]);
   
-          const detailSoalBySop = detailSoalSemua.filter(
-            (detail) => Number(detail.sop) === Number(item.soal_sop)
-          );
+  //         const detailSoalBySop = detailSoalSemua.filter(
+  //           (detail) => Number(detail.sop) === Number(item.soal_sop)
+  //         );
   
-          detailSoalBySop.forEach((detail) => {
-            worksheetData.push([
-              "",
-              `• ${detail.deskripsi_soal || "-"}`,
-              "",
-              "",
-            ]);
-          });
-        });
+  //         detailSoalBySop.forEach((detail) => {
+  //           worksheetData.push([
+  //             "",
+  //             `• ${detail.deskripsi_soal || "-"}`,
+  //             "",
+  //             "",
+  //           ]);
+  //         });
+  //       });
   
-        const worksheet = XLSX.utils.aoa_to_sheet(worksheetData);
+  //       const worksheet = XLSX.utils.aoa_to_sheet(worksheetData);
   
-        worksheet["!cols"] = [
-          { wch: 8 },
-          { wch: 80 },
-          { wch: 12 },
-          { wch: 22 },
-        ];
+  //       worksheet["!cols"] = [
+  //         { wch: 8 },
+  //         { wch: 80 },
+  //         { wch: 12 },
+  //         { wch: 22 },
+  //       ];
   
-        worksheet["!merges"] = [
-          {
-            s: { r: 0, c: 0 },
-            e: { r: 0, c: 3 },
-          },
-        ];
+  //       worksheet["!merges"] = [
+  //         {
+  //           s: { r: 0, c: 0 },
+  //           e: { r: 0, c: 3 },
+  //         },
+  //       ];
   
-        const baseBorder = {
-          top: { style: "thin", color: { rgb: "D9E2EC" } },
-          bottom: { style: "thin", color: { rgb: "D9E2EC" } },
-          left: { style: "thin", color: { rgb: "D9E2EC" } },
-          right: { style: "thin", color: { rgb: "D9E2EC" } },
-        };
+  //       const baseBorder = {
+  //         top: { style: "thin", color: { rgb: "D9E2EC" } },
+  //         bottom: { style: "thin", color: { rgb: "D9E2EC" } },
+  //         left: { style: "thin", color: { rgb: "D9E2EC" } },
+  //         right: { style: "thin", color: { rgb: "D9E2EC" } },
+  //       };
   
-        const greenBorder = {
-          top: { style: "thin", color: { rgb: "A7F3D0" } },
-          bottom: { style: "thin", color: { rgb: "A7F3D0" } },
-          left: { style: "thin", color: { rgb: "A7F3D0" } },
-          right: { style: "thin", color: { rgb: "A7F3D0" } },
-        };
+  //       const greenBorder = {
+  //         top: { style: "thin", color: { rgb: "A7F3D0" } },
+  //         bottom: { style: "thin", color: { rgb: "A7F3D0" } },
+  //         left: { style: "thin", color: { rgb: "A7F3D0" } },
+  //         right: { style: "thin", color: { rgb: "A7F3D0" } },
+  //       };
   
-        const baseStyle = {
-          font: {
-            name: "Arial",
-            sz: 11,
-          },
-          alignment: {
-            vertical: "center",
-            wrapText: true,
-          },
-          border: baseBorder,
-        };
+  //       const baseStyle = {
+  //         font: {
+  //           name: "Arial",
+  //           sz: 11,
+  //         },
+  //         alignment: {
+  //           vertical: "center",
+  //           wrapText: true,
+  //         },
+  //         border: baseBorder,
+  //       };
   
-        const centerStyle = {
-          ...baseStyle,
-          alignment: {
-            horizontal: "center",
-            vertical: "center",
-            wrapText: true,
-          },
-        };
+  //       const centerStyle = {
+  //         ...baseStyle,
+  //         alignment: {
+  //           horizontal: "center",
+  //           vertical: "center",
+  //           wrapText: true,
+  //         },
+  //       };
   
-        const range = XLSX.utils.decode_range(worksheet["!ref"] || "A1:D1");
+  //       const range = XLSX.utils.decode_range(worksheet["!ref"] || "A1:D1");
   
-        for (let row = range.s.r; row <= range.e.r; row++) {
-          for (let col = range.s.c; col <= range.e.c; col++) {
-            const cellAddress = XLSX.utils.encode_cell({ r: row, c: col });
+  //       for (let row = range.s.r; row <= range.e.r; row++) {
+  //         for (let col = range.s.c; col <= range.e.c; col++) {
+  //           const cellAddress = XLSX.utils.encode_cell({ r: row, c: col });
   
-            if (!worksheet[cellAddress]) continue;
+  //           if (!worksheet[cellAddress]) continue;
   
-            worksheet[cellAddress].s = baseStyle;
-          }
-        }
+  //           worksheet[cellAddress].s = baseStyle;
+  //         }
+  //       }
   
-        worksheet["A1"].s = {
-          font: {
-            name: "Arial",
-            sz: 16,
-            bold: true,
-            color: { rgb: "FFFFFF" },
-          },
-          fill: {
-            fgColor: { rgb: "059669" },
-          },
-          alignment: {
-            horizontal: "center",
-            vertical: "center",
-          },
-        };
+  //       worksheet["A1"].s = {
+  //         font: {
+  //           name: "Arial",
+  //           sz: 16,
+  //           bold: true,
+  //           color: { rgb: "FFFFFF" },
+  //         },
+  //         fill: {
+  //           fgColor: { rgb: "059669" },
+  //         },
+  //         alignment: {
+  //           horizontal: "center",
+  //           vertical: "center",
+  //         },
+  //       };
   
-        for (let row = 2; row <= 7; row++) {
-          const labelCell = `A${row + 1}`;
-          const valueCell = `B${row + 1}`;
+  //       for (let row = 2; row <= 7; row++) {
+  //         const labelCell = `A${row + 1}`;
+  //         const valueCell = `B${row + 1}`;
   
-          if (worksheet[labelCell]) {
-            worksheet[labelCell].s = {
-              font: {
-                name: "Arial",
-                bold: true,
-                color: { rgb: "064E3B" },
-              },
-              fill: {
-                fgColor: { rgb: "D1FAE5" },
-              },
-              alignment: {
-                vertical: "center",
-                wrapText: true,
-              },
-              border: greenBorder,
-            };
-          }
+  //         if (worksheet[labelCell]) {
+  //           worksheet[labelCell].s = {
+  //             font: {
+  //               name: "Arial",
+  //               bold: true,
+  //               color: { rgb: "064E3B" },
+  //             },
+  //             fill: {
+  //               fgColor: { rgb: "D1FAE5" },
+  //             },
+  //             alignment: {
+  //               vertical: "center",
+  //               wrapText: true,
+  //             },
+  //             border: greenBorder,
+  //           };
+  //         }
   
-          if (worksheet[valueCell]) {
-            worksheet[valueCell].s = {
-              font: {
-                name: "Arial",
-                bold: true,
-                color: { rgb: "111827" },
-              },
-              alignment: {
-                vertical: "center",
-                wrapText: true,
-              },
-              border: greenBorder,
-            };
-          }
-        }
+  //         if (worksheet[valueCell]) {
+  //           worksheet[valueCell].s = {
+  //             font: {
+  //               name: "Arial",
+  //               bold: true,
+  //               color: { rgb: "111827" },
+  //             },
+  //             alignment: {
+  //               vertical: "center",
+  //               wrapText: true,
+  //             },
+  //             border: greenBorder,
+  //           };
+  //         }
+  //       }
   
-        const tableHeaderRow = 10;
+  //       const tableHeaderRow = 10;
   
-        ["A", "B", "C", "D"].forEach((col) => {
-          const cell = `${col}${tableHeaderRow}`;
+  //       ["A", "B", "C", "D"].forEach((col) => {
+  //         const cell = `${col}${tableHeaderRow}`;
   
-          if (worksheet[cell]) {
-            worksheet[cell].s = {
-              font: {
-                name: "Arial",
-                bold: true,
-                color: { rgb: "FFFFFF" },
-              },
-              fill: {
-                fgColor: { rgb: "0F766E" },
-              },
-              alignment: {
-                horizontal: "center",
-                vertical: "center",
-                wrapText: true,
-              },
-              border: {
-                top: { style: "thin", color: { rgb: "0F766E" } },
-                bottom: { style: "thin", color: { rgb: "0F766E" } },
-                left: { style: "thin", color: { rgb: "0F766E" } },
-                right: { style: "thin", color: { rgb: "0F766E" } },
-              },
-            };
-          }
-        });
+  //         if (worksheet[cell]) {
+  //           worksheet[cell].s = {
+  //             font: {
+  //               name: "Arial",
+  //               bold: true,
+  //               color: { rgb: "FFFFFF" },
+  //             },
+  //             fill: {
+  //               fgColor: { rgb: "0F766E" },
+  //             },
+  //             alignment: {
+  //               horizontal: "center",
+  //               vertical: "center",
+  //               wrapText: true,
+  //             },
+  //             border: {
+  //               top: { style: "thin", color: { rgb: "0F766E" } },
+  //               bottom: { style: "thin", color: { rgb: "0F766E" } },
+  //               left: { style: "thin", color: { rgb: "0F766E" } },
+  //               right: { style: "thin", color: { rgb: "0F766E" } },
+  //             },
+  //           };
+  //         }
+  //       });
   
-        for (let row = tableHeaderRow + 1; row <= range.e.r + 1; row++) {
-          const noCell = worksheet[`A${row}`];
-          const soalCell = worksheet[`B${row}`];
-          const bobotCell = worksheet[`C${row}`];
-          const nilaiCell = worksheet[`D${row}`];
+  //       for (let row = tableHeaderRow + 1; row <= range.e.r + 1; row++) {
+  //         const noCell = worksheet[`A${row}`];
+  //         const soalCell = worksheet[`B${row}`];
+  //         const bobotCell = worksheet[`C${row}`];
+  //         const nilaiCell = worksheet[`D${row}`];
   
-          const isDetailSoal = noCell && noCell.v === "";
+  //         const isDetailSoal = noCell && noCell.v === "";
   
-          if (isDetailSoal) {
-            ["A", "B", "C", "D"].forEach((col) => {
-              const cell = worksheet[`${col}${row}`];
+  //         if (isDetailSoal) {
+  //           ["A", "B", "C", "D"].forEach((col) => {
+  //             const cell = worksheet[`${col}${row}`];
   
-              if (!cell) return;
+  //             if (!cell) return;
   
-              cell.s = {
-                font: {
-                  name: "Arial",
-                  italic: true,
-                  color: { rgb: "374151" },
-                },
-                fill: {
-                  fgColor: { rgb: "ECFDF5" },
-                },
-                alignment: {
-                  vertical: "center",
-                  wrapText: true,
-                },
-                border: {
-                  top: { style: "thin", color: { rgb: "D1FAE5" } },
-                  bottom: { style: "thin", color: { rgb: "D1FAE5" } },
-                  left: { style: "thin", color: { rgb: "D1FAE5" } },
-                  right: { style: "thin", color: { rgb: "D1FAE5" } },
-                },
-              };
-            });
+  //             cell.s = {
+  //               font: {
+  //                 name: "Arial",
+  //                 italic: true,
+  //                 color: { rgb: "374151" },
+  //               },
+  //               fill: {
+  //                 fgColor: { rgb: "ECFDF5" },
+  //               },
+  //               alignment: {
+  //                 vertical: "center",
+  //                 wrapText: true,
+  //               },
+  //               border: {
+  //                 top: { style: "thin", color: { rgb: "D1FAE5" } },
+  //                 bottom: { style: "thin", color: { rgb: "D1FAE5" } },
+  //                 left: { style: "thin", color: { rgb: "D1FAE5" } },
+  //                 right: { style: "thin", color: { rgb: "D1FAE5" } },
+  //               },
+  //             };
+  //           });
   
-            continue;
-          }
+  //           continue;
+  //         }
   
-          if (noCell) {
-            noCell.s = {
-              ...centerStyle,
-              font: {
-                name: "Arial",
-                bold: true,
-              },
-            };
-          }
+  //         if (noCell) {
+  //           noCell.s = {
+  //             ...centerStyle,
+  //             font: {
+  //               name: "Arial",
+  //               bold: true,
+  //             },
+  //           };
+  //         }
   
-          if (soalCell) {
-            soalCell.s = {
-              ...baseStyle,
-              font: {
-                name: "Arial",
-                color: { rgb: "111827" },
-              },
-            };
-          }
+  //         if (soalCell) {
+  //           soalCell.s = {
+  //             ...baseStyle,
+  //             font: {
+  //               name: "Arial",
+  //               color: { rgb: "111827" },
+  //             },
+  //           };
+  //         }
   
-          if (bobotCell) {
-            bobotCell.s = {
-              ...centerStyle,
-              font: {
-                name: "Arial",
-                bold: true,
-              },
-            };
-          }
+  //         if (bobotCell) {
+  //           bobotCell.s = {
+  //             ...centerStyle,
+  //             font: {
+  //               name: "Arial",
+  //               bold: true,
+  //             },
+  //           };
+  //         }
   
-          if (nilaiCell) {
-            nilaiCell.s = {
-              ...centerStyle,
-              font: {
-                name: "Arial",
-                bold: true,
-                color: {
-                  rgb: Number(nilaiCell.v) > 1 ? "047857" : "DC2626",
-                },
-              },
-            };
-          }
-        }
+  //         if (nilaiCell) {
+  //           nilaiCell.s = {
+  //             ...centerStyle,
+  //             font: {
+  //               name: "Arial",
+  //               bold: true,
+  //               color: {
+  //                 rgb: Number(nilaiCell.v) > 1 ? "047857" : "DC2626",
+  //               },
+  //             },
+  //           };
+  //         }
+  //       }
   
-        worksheet["!rows"] = worksheetData.map((_, index) => {
-          if (index === 0) return { hpt: 28 };
-          if (index >= 2 && index <= 7) return { hpt: 22 };
-          if (index === 9) return { hpt: 24 };
+  //       worksheet["!rows"] = worksheetData.map((_, index) => {
+  //         if (index === 0) return { hpt: 28 };
+  //         if (index >= 2 && index <= 7) return { hpt: 22 };
+  //         if (index === 9) return { hpt: 24 };
   
-          return { hpt: 35 };
-        });
+  //         return { hpt: 35 };
+  //       });
   
-        const namaSheet = String(sop.sop || "SOP")
-          .replace(/[\\/:*?"<>|]/g, "")
-          .slice(0, 31);
+  //       const namaSheet = String(sop.sop || "SOP")
+  //         .replace(/[\\/:*?"<>|]/g, "")
+  //         .slice(0, 31);
   
-        XLSX.utils.book_append_sheet(
-          workbook,
-          worksheet,
-          namaSheet || `SOP ${sop.id}`
-        );
-      }
+  //       XLSX.utils.book_append_sheet(
+  //         workbook,
+  //         worksheet,
+  //         namaSheet || `SOP ${sop.id}`
+  //       );
+  //     }
   
-      const namaFile = `detail_nilai_${mahasiswaAktif.nama_lengkap || "mahasiswa"}`
-        .replace(/[\\/:*?"<>|]/g, "")
-        .replace(/\s+/g, "_")
-        .toLowerCase();
+  //     const namaFile = `detail_nilai_${mahasiswaAktif.nama_lengkap || "mahasiswa"}`
+  //       .replace(/[\\/:*?"<>|]/g, "")
+  //       .replace(/\s+/g, "_")
+  //       .toLowerCase();
   
-      XLSX.writeFile(workbook, `${namaFile}.xlsx`);
-    } catch (error) {
-      console.error("Gagal cetak Excel per siswa:", error);
-      alert("Gagal mencetak Excel per siswa");
-    } finally {
-      setIsLoading(false);
-    }
-  };
+  //     XLSX.writeFile(workbook, `${namaFile}.xlsx`);
+  //   } catch (error) {
+  //     console.error("Gagal cetak Excel per siswa:", error);
+  //     alert("Gagal mencetak Excel per siswa");
+  //   } finally {
+  //     setIsLoading(false);
+  //   }
+  // };
 
   const handleDeleteTest = async (id: number) => {
     setIsLoading(true);
@@ -1094,13 +1879,14 @@ const Page = () => {
                             {sop.sop}
                           </p>
                           <p className=" text-gray-400">
-                          Dosen : {
+                          Dosen : {getNamaDosenBySOP(sop.sop)}
+                          {/* Dosen : {
                             testAllUserList.find(
                               (test) =>
                                 Number(test.sesi) === Number(sop.sesi) &&
                                 test.user_detail?.is_staff === true
                             )?.user_detail?.nama_lengkap || "Unknown"
-                          }
+                          } */}
                         </p>
                         </div>
                       </div>
