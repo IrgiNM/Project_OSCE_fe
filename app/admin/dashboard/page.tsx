@@ -1857,7 +1857,8 @@ const Page = () => {
 
               <div className="flex-1 space-y-3 overflow-y-auto pr-1">
                 {testUserList.map((sop, index) => {
-                  const isNilaiLulus = sop.total_nilai >= 70;
+                  const isNilaiLulus = sop.total_nilai > 75;
+                  // const isNilaiLulus = sop.total_nilai >= 70;
 
                   return (
                     <button
