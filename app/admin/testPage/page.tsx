@@ -153,65 +153,131 @@ const Page = () => {
     //         : "")
     // }, [detailTestData])
 
-    const handleUpdateTest = async () => {
-        if (tesDipilih === 0) {
-          // alert("Pilih SOP terlebih dahulu");
+    const handleUpdateTest2 = async () => {
+      if (tesDipilih === 0) {
+        // alert("Pilih SOP terlebih dahulu");
+        return;
+      }
+    
+      if (detailTestData.length === 0) {
+        // alert("Data detail test masih kosong");
+        return;
+      }
+    
+      setIsLoading(true);
+    
+      try {
+        const totalNilai = detailTestData.reduce((acc, item) => {
+          return acc + Number(item.nilai || 0);
+        }, 0);
+    
+        const totalBobot = detailTestData.reduce((total, item) => {
+          return total + Number(item.soal_sop_detail?.bobot || 0);
+        }, 0);
+    
+        if (totalBobot === 0) {
           return;
         }
-      
-        if (detailTestData.length === 0) {
-          // alert("Data detail test masih kosong");
-          return;
+    
+        const nilaiPersen = Number(
+          ((totalNilai / totalBobot) * 100).toFixed(0)
+        );
+    
+        const res = await updateTest(tesDipilih, {
+          total_nilai: nilaiPersen,
+        });
+    
+        if (res.status === 200) {
+          // alert("Update test berhasil");
+          router.push("/admin");
         }
-      
-        setIsLoading(true);
-      
-        try {
-          const totalNilai = detailTestData.reduce((acc, item) => {
-            return acc + item.nilai;
-          }, 0);
-      
-          // const nilaiPersen = Number(
-          //   ((totalNilai / (detailTestData.length)) * 100).toFixed(0)
-          // );
-          const nilaiPersen = Number(
-            ((totalNilai / (detailTestData.reduce((total, item) => {
-              return total + item.soal_sop_detail.bobot;
-            }, 0))) * 100).toFixed(0)
-          );
-      
-          const res = await updateTest(tesDipilih, {
-            total_nilai: nilaiPersen,
-          });
-      
-          if (res.status === 200) {
-            // // alert("Update test berhasil");
-            router.push("/admin");
-          }
-        } catch (error) {
-          // console.error("Error update test:", error);
-          // alert("Gagal update test");
-        } finally {
-          setIsLoading(false);
-        }
-      };
+      } catch (error) {
+        // console.error("Error update test:", error);
+        // alert("Gagal update test");
+      } finally {
+        setIsLoading(false);
+      }
+    };
 
-    const handleUpdate = async (test:number, soal:number, nilai:number) => {
-        try {
-            console
-            const response = await updateDetailTest({
-                test: test,
-                soal_sop: soal,
-                nilai: nilai
-            });
-            if(response.status === 200){
-                // // alert('Berhasil update detail test')
-                // router.refresh()
-            }
-        } catch (error) {
-            // console.error('Error updateing siswa:', error)
+    const hitungNilaiPersen = (dataDetail: any[]) => {
+      const totalNilai = dataDetail.reduce((acc, item) => {
+        return acc + Number(item.nilai || 0);
+      }, 0);
+    
+      const totalBobot = dataDetail.reduce((total, item) => {
+        return total + Number(item.soal_sop_detail?.bobot || 0);
+      }, 0);
+    
+      if (totalBobot === 0) return 0;
+    
+      return Number(((totalNilai / totalBobot) * 100).toFixed(0));
+    };
+    
+    const handleUpdateTest = async (
+      dataDetail = detailTestData,
+      redirect = true
+    ) => {
+      if (tesDipilih === 0) {
+        return;
+      }
+    
+      if (dataDetail.length === 0) {
+        return;
+      }
+    
+      try {
+        const nilaiPersen = hitungNilaiPersen(dataDetail);
+    
+        const res = await updateTest(tesDipilih, {
+          total_nilai: nilaiPersen,
+        });
+    
+        if (res.status === 200 && redirect) {
+          router.push("/admin");
         }
-    }
+      } catch (error) {
+        // console.error("Error update test:", error);
+      }
+    };
+    
+    const handleUpdate = async (test: number, soal: number, nilai: number) => {
+      setIsLoading(true);
+    
+      try {
+        const response = await updateDetailTest({
+          test: test,
+          soal_sop: soal,
+          nilai: nilai,
+        });
+    
+        if (response.status === 200) {
+          const updatedDetailTestData = detailTestData.map((item) => {
+            const itemTestId = item.test;
+    
+            const itemSoalId =
+              item.soal_sop_detail?.id ||
+              item.soal_sop;
+    
+            if (itemTestId === test && itemSoalId === soal) {
+              return {
+                ...item,
+                nilai: nilai,
+              };
+            }
+    
+            return item;
+          });
+    
+          setDetailTestData(updatedDetailTestData);
+    
+          await handleUpdateTest(updatedDetailTestData, false);
+        }
+      } catch (error) {
+        // console.error("Error updating detail test:", error);
+      } finally {
+        setIsLoading(false);
+      }
+    };
 
     const handleUpdate2 = (id: number, nilaiBaru: number) => {
         setDetailTestData((prevData) =>
@@ -517,7 +583,7 @@ const Page = () => {
                     
                   <div className="flex flex-col gap-2">
                     <button
-                      onClick={()=>{handleUpdateTest()}}
+                      onClick={()=>{handleUpdateTest2()}}
                       className="rounded-lg bg-gradient-to-r from-emerald-600 to-cyan-600 p-3 font-black text-white hover:from-emerald-700 hover:to-cyan-700"
                     >
                       {isLoading?'menyimpan...':'Ya, selesaikan test'}
